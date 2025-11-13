@@ -5,7 +5,8 @@ const {
   getUserProfile,
   updateUserProfile,
   getUserDocuments,
-  getUserApplications
+  getUserApplications,
+  getUserProgress
 } = require('../controllers/userController');
 
 const router = express.Router();
@@ -18,5 +19,8 @@ router.get('/profile', getUserProfile);
 router.put('/profile', updateUserProfile);
 router.get('/documents', getUserDocuments);
 router.get('/applications', getUserApplications);
+router.get('/progress', getUserProgress);
+
+
 
 module.exports = router;

@@ -172,7 +172,6 @@ export default function ProfilePage() {
 
   const handleAddExperience = async (exp: Experience, index?: number) => {
     try {
-      debugger;
       let updatedList = [...profileData.experience];
 
       if (index !== undefined) {
@@ -455,7 +454,6 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     try {
-      debugger;
       setLoading(true);
       setError("");
 

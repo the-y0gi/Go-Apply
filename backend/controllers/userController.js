@@ -1,201 +1,4 @@
-// const UserProfile = require('../models/UserProfile');
-// const User = require('../models/User');
-
-// // POST->   Save user questionnaire data
-// const saveQuestionnaire = async (req, res) => {
-//   try {
-//     const {
-//       fieldOfStudy,
-//       studyLevel,
-//       nationality,
-//       englishProficiency,
-//       availableFunds,
-//       visaRefusalHistory,
-//       intendedStartDate,
-//       education,
-//       standardizedTests
-//     } = req.body;
-
-//     // Find or create user profile
-//     let userProfile = await UserProfile.findOne({ userId: req.user._id });
-
-//     if (userProfile) {
-//       // Update existing profile
-//       userProfile = await UserProfile.findOneAndUpdate(
-//         { userId: req.user._id },
-//         {
-//           fieldOfStudy,
-//           studyLevel,
-//           nationality,
-//           englishProficiency,
-//           availableFunds,
-//           visaRefusalHistory,
-//           intendedStartDate,
-//           education,
-//           standardizedTests,
-//           updatedAt: new Date()
-//         },
-//         { new: true, runValidators: true }
-//       );
-//     } else {
-//       // Create new profile
-//       userProfile = new UserProfile({
-//         userId: req.user._id,
-//         fieldOfStudy,
-//         studyLevel,
-//         nationality,
-//         englishProficiency,
-//         availableFunds,
-//         visaRefusalHistory,
-//         intendedStartDate,
-//         education,
-//         standardizedTests
-//       });
-//       await userProfile.save();
-//     }
-
-//     // Update user's registration progress
-//     await User.findByIdAndUpdate(req.user._id, {
-//       profileCompleted: true,
-//       registrationStep: 8 // Completed all steps
-//     });
-
-//     res.status(200).json({
-//       success: true,
-//       message: 'Questionnaire saved successfully',
-//       data: {
-//         profile: userProfile
-//       }
-//     });
-
-//   } catch (error) {
-//     console.error('Save questionnaire error:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error saving questionnaire',
-//       error: process.env.NODE_ENV === 'development' ? error.message : undefined
-//     });
-//   }
-// };
-
-// // GET->   Get user profile
-// const getUserProfile = async (req, res) => {
-//   try {
-//     const userProfile = await UserProfile.findOne({ userId: req.user._id })
-//       .populate('userId', 'firstName lastName email');
-
-//     if (!userProfile) {
-//       return res.status(404).json({
-//         success: false,
-//         message: 'User profile not found'
-//       });
-//     }
-
-//     res.json({
-//       success: true,
-//       data: {
-//         profile: userProfile
-//       }
-//     });
-
-//   } catch (error) {
-//     console.error('Get user profile error:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error fetching user profile'
-//     });
-//   }
-// };
-
-// // PUT->   Update user profile
-// const updateUserProfile = async (req, res) => {
-//   try {
-//     const updateData = req.body;
-
-//     const userProfile = await UserProfile.findOneAndUpdate(
-//       { userId: req.user._id },
-//       { ...updateData, updatedAt: new Date() },
-//       { new: true, runValidators: true, upsert: true }
-//     );
-
-//     res.json({
-//       success: true,
-//       message: 'Profile updated successfully',
-//       data: {
-//         profile: userProfile
-//       }
-//     });
-
-//   } catch (error) {
-//     console.error('Update user profile error:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error updating profile',
-//       error: process.env.NODE_ENV === 'development' ? error.message : undefined
-//     });
-//   }
-// };
-
-// // GET->   Get user documents
-// const getUserDocuments = async (req, res) => {
-//   try {
-//     const Document = require('../models/Document');
-    
-//     const documents = await Document.find({ userId: req.user._id })
-//       .sort({ uploadedAt: -1 });
-
-//     res.json({
-//       success: true,
-//       data: {
-//         documents,
-//         count: documents.length
-//       }
-//     });
-
-//   } catch (error) {
-//     console.error('Get user documents error:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error fetching documents'
-//     });
-//   }
-// };
-
-// // GET->   Get user applications
-// const getUserApplications = async (req, res) => {
-//   try {
-//     const Application = require('../models/Application');
-    
-//     const applications = await Application.find({ userId: req.user._id })
-//       .populate('universityId', 'name country logoUrl')
-//       .populate('programId', 'name degreeType fieldOfStudy tuitionFee')
-//       .sort({ createdAt: -1 });
-
-//     res.json({
-//       success: true,
-//       data: {
-//         applications,
-//         count: applications.length
-//       }
-//     });
-
-//   } catch (error) {
-//     console.error('Get user applications error:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error fetching applications'
-//     });
-//   }
-// };
-
-// module.exports = {
-//   saveQuestionnaire,
-//   getUserProfile,
-//   updateUserProfile,
-//   getUserDocuments,
-//   getUserApplications
-// };
-
+const { default: mongoose } = require("mongoose");
 const User = require("../models/User");
 const UserProfile = require("../models/UserProfile");
 
@@ -275,7 +78,6 @@ const saveQuestionnaire = async (req, res) => {
     });
   }
 };
-
 
 
 //GET -> Fetch user profile
@@ -458,6 +260,83 @@ const getUserApplications = async (req, res) => {
   }
 };
 
+//home track progress step by step
+const getUserProgress = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    const progress = await UserProfile.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $lookup: {
+          from: 'documents',
+          localField: 'userId',
+          foreignField: 'userId',
+          as: 'documents'
+        }
+      },
+      {
+        $lookup: {
+          from: 'applications', 
+          localField: 'userId',
+          foreignField: 'userId',
+          as: 'applications'
+        }
+      },
+      {
+        $project: {
+          profileComplete: { 
+            $and: [
+              { $gt: [{ $size: '$educationHistory' }, 0] },
+              { $ne: ['$nationality', null] },
+              { $ne: ['$dateOfBirth', null] }
+            ]
+          },
+          hasDocuments: { $gt: [{ $size: '$documents' }, 0] },
+          hasApplications: { $gt: [{ $size: '$applications' }, 0] },
+          hasPaidApplications: {
+            $anyElementTrue: {
+              $map: {
+                input: '$applications',
+                as: 'app',
+                in: '$$app.progress.payment'
+              }
+            }
+          },
+          hasAcceptedApplications: {
+            $in: ['accepted', '$applications.status']
+          },
+          totalApplications: { $size: '$applications' },
+          paidApplications: {
+            $size: {
+              $filter: {
+                input: '$applications',
+                as: 'app',
+                cond: '$$app.progress.payment'
+              }
+            }
+          }
+        }
+      }
+    ]);
+
+    res.json({ 
+      success: true, 
+      data: { progress: progress[0] || {
+        profileComplete: false,
+        hasDocuments: false,
+        hasApplications: false,
+        hasPaidApplications: false,
+        hasAcceptedApplications: false,
+        totalApplications: 0,
+        paidApplications: 0
+      }} 
+    });
+  } catch (error) {
+    console.error("Progress aggregation error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 module.exports = {
   saveQuestionnaire,
@@ -465,4 +344,5 @@ module.exports = {
   updateUserProfile,
   getUserDocuments,
   getUserApplications,
+  getUserProgress
 };

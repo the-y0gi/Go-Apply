@@ -1,9 +1,11 @@
 const Payment = require('../models/Payment');
 const Application = require('../models/Application');
 const { createOrder, verifyPayment, getPaymentDetails } = require('../config/razorpay');
+const User = require('../models/User');
+const UserProfile = require('../models/UserProfile');
 
-//POST->   Create payment order
-const createPaymentOrder = async (req, res) => {
+//create payment
+exports.createPaymentOrder = async (req, res) => {
   try {
     const { applicationId, amount, currency = 'INR' } = req.body;
 
@@ -14,7 +16,6 @@ const createPaymentOrder = async (req, res) => {
       });
     }
 
-    // Verify application exists and belongs to user
     const application = await Application.findOne({
       _id: applicationId,
       userId: req.user._id
@@ -23,270 +24,239 @@ const createPaymentOrder = async (req, res) => {
     if (!application) {
       return res.status(404).json({
         success: false,
-        message: 'Application not found'
+        message: "Application not found"
       });
     }
 
-    // Create Razorpay order
+    // Razorpay order
     const order = await createOrder(amount, currency);
 
-    // Create payment record
-    const payment = new Payment({
+    // Payment record
+    const payment = await Payment.create({
       userId: req.user._id,
       applicationId,
       razorpayOrderId: order.id,
       amount,
       currency,
+      status: "created",
       description: `Application fee for ${application.programId?.name || 'program'}`
     });
 
-    await payment.save();
-
     res.json({
       success: true,
-      message: 'Order created successfully',
+      message: "Order created",
       data: {
-        order: {
-          id: order.id,
-          amount: order.amount,
-          currency: order.currency,
-          receipt: order.receipt
-        },
-        payment: {
-          id: payment._id,
-          amount: payment.amount,
-          currency: payment.currency
-        },
+        order,
+        payment,
         key: process.env.RAZORPAY_KEY_ID
       }
     });
 
-  } catch (error) {
-    console.error('Create payment order error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error creating payment order',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+  } catch (err) {
+    console.error("Create order error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-//POST->   Verify payment
-const verifyPaymentController = async (req, res) => {
+const sendApplicationToCollege = async (application) => {
+  try {
+    const user = await User.findById(application.userId);
+    const userProfile = await UserProfile.findOne({ userId: application.userId });
+    const documents = await Document.find({ applicationId: application._id });
+
+    const collegeData = {
+      applicationId: application._id,
+      student: {
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        phone: userProfile?.phone,
+        nationality: userProfile?.nationality,
+        education: userProfile?.educationHistory,
+        workExperience: userProfile?.experience,
+        documents: documents.map(doc => ({
+          type: doc.type,
+          url: doc.url,
+          uploadedAt: doc.uploadedAt
+        }))
+      },
+      program: {
+        name: application.programId?.name,
+        degreeType: application.programId?.degreeType,
+        fieldOfStudy: application.programId?.fieldOfStudy
+      },
+      university: {
+        name: application.universityId?.name,
+        country: application.universityId?.country
+      },
+      applicationDetails: {
+        personalStatement: application.personalStatement,
+        submittedAt: application.submittedAt,
+        paymentStatus: "paid"
+      }
+    };
+
+    //  Send to college (Choose one method)
+    
+    // Email to university
+    // await sendEmailToUniversity(collegeData);
+    
+    //Store in database for admin view
+    // await storeApplicationForAdmin(collegeData);
+    
+    // Webhook to university system
+    // await sendWebhookToUniversity(collegeData);
+
+    console.log(`Application sent to college: ${application.universityId?.name}`);
+
+  } catch (error) {
+    console.error("Error sending application to college:", error);
+  }
+};
+
+exports.verifyPaymentController = async (req, res) => {
   try {
     const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
 
     if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing payment verification details'
-      });
+      return res.status(400).json({ success: false, message: "Missing verification data" });
     }
 
-    // Verify payment signature
-    const isValid = verifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignature);
+    const verifyResult = await verifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignature);
 
-    if (!isValid) {
-      return res.status(400).json({
-        success: false,
-        message: 'Payment verification failed'
-      });
+    if (!verifyResult.success) {
+      await Payment.findOneAndUpdate(
+        { razorpayOrderId },
+        { status: "failed" }
+      );
+      return res.status(400).json({ success: false, message: "Payment verification failed" });
     }
 
-    // Update payment record
     const payment = await Payment.findOneAndUpdate(
       { razorpayOrderId, userId: req.user._id },
       {
         razorpayPaymentId,
         razorpaySignature,
-        status: 'paid',
+        status: "paid",
+        paymentMethod: verifyResult.method,
+        methodDetails: verifyResult.methodDetails || {},
         paidAt: new Date(),
-        ...(req.body.paymentMethod && { paymentMethod: req.body.paymentMethod })
       },
       { new: true }
-    ).populate('applicationId');
+    ).populate("applicationId");
 
     if (!payment) {
-      return res.status(404).json({
-        success: false,
-        message: 'Payment record not found'
-      });
+      return res.status(404).json({ success: false, message: "Payment record not found" });
     }
 
-    // Update application payment status if applicable
-    if (payment.applicationId) {
-      await Application.findByIdAndUpdate(payment.applicationId, {
-        'progress.payment': true
-      });
-    }
+    // UPDATE PROGRESS
+    await Application.findByIdAndUpdate(payment.applicationId._id, {
+      "progress.payment": true,
+      paymentStatus: "paid"
+    });
 
-    // Get complete payment details from Razorpay
-    const paymentDetails = await getPaymentDetails(razorpayPaymentId);
+    // AUTO-SUBMIT 
+    const application = await Application.findById(payment.applicationId._id)
+      .populate("userId")
+      .populate("universityId")
+      .populate("programId");
+
+    const requiredSteps = ["personalInfo", "academicInfo", "documents", "payment"];
+    const isComplete = requiredSteps.every((step) => application.progress[step]);
+
+    if (isComplete && application.status === "draft") {
+      application.status = "submitted";
+      application.submittedAt = new Date();
+      await application.save();
+
+      await sendApplicationToCollege(application);
+      
+      console.log(`Application ${application._id} auto-submitted to college after payment`);
+    }
 
     res.json({
       success: true,
-      message: 'Payment verified successfully',
+      message: isComplete ? "Payment verified and application submitted to college" : "Payment verified",
       data: {
-        payment: {
-          ...payment.toObject(),
-          paymentDetails
-        }
-      }
-    });
-
-  } catch (error) {
-    console.error('Verify payment error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error verifying payment',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-};
-
-//GET->   Get payment history 
-const getPaymentHistory = async (req, res) => {
-  try {
-    const { page = 1, limit = 10, status } = req.query;
-    
-    let filter = { userId: req.user._id };
-    
-    if (status) {
-      filter.status = status;
-    }
-
-    const payments = await Payment.find(filter)
-      .populate('applicationId')
-      .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
-
-    const total = await Payment.countDocuments(filter);
-
-    // Calculate total spent
-    const totalSpent = await Payment.aggregate([
-      { $match: { ...filter, status: 'paid' } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-
-    res.json({
-      success: true,
-      data: {
-        payments,
-        summary: {
-          totalSpent: totalSpent[0]?.total || 0,
-          totalPayments: total
+        payment,
+        application: {
+          _id: application._id,
+          status: application.status,
+          progress: application.progress,
+          submittedAt: application.submittedAt
         },
-        pagination: {
-          current: parseInt(page),
-          pages: Math.ceil(total / limit),
-          total
-        }
+        paymentDetails: verifyResult.details
       }
     });
 
-  } catch (error) {
-    console.error('Get payment history error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching payment history'
-    });
+  } catch (err) {
+    console.error("Verify error:", err);
+    res.status(500).json({ success: false, message: "Error verifying payment" });
   }
 };
 
-//GET->   Get payment by ID
-const getPaymentById = async (req, res) => {
+exports.getPaymentHistory = async (req, res) => {
+  try {
+    const payments = await Payment.find({ userId: req.user._id })
+      .populate("applicationId")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: { payments }
+    });
+
+  } catch (err) {
+    console.error("History error:", err);
+    res.status(500).json({ success: false, message: "Error fetching history" });
+  }
+};
+
+//GET PAYMENT BY ID
+exports.getPaymentById = async (req, res) => {
   try {
     const payment = await Payment.findOne({
       _id: req.params.id,
       userId: req.user._id
-    }).populate('applicationId');
+    }).populate("applicationId");
 
     if (!payment) {
-      return res.status(404).json({
-        success: false,
-        message: 'Payment not found'
-      });
+      return res.status(404).json({ success: false, message: "Payment not found" });
     }
 
-    res.json({
-      success: true,
-      data: {
-        payment
-      }
-    });
+    res.json({ success: true, data: { payment } });
 
-  } catch (error) {
-    console.error('Get payment by ID error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching payment'
-    });
+  } catch (err) {
+    console.error("Payment error:", err);
+    res.status(500).json({ success: false, message: "Error" });
   }
 };
 
-
-const initiateRefund = async (req, res) => {
+//REFUND
+exports.initiateRefund = async (req, res) => {
   try {
-    const { reason } = req.body;
-
     const payment = await Payment.findOne({
       _id: req.params.id,
       userId: req.user._id,
-      status: 'paid'
+      status: "paid"
     });
 
     if (!payment) {
-      return res.status(404).json({
-        success: false,
-        message: 'Payment not found or not eligible for refund'
-      });
+      return res.status(404).json({ success: false, message: "Not eligible for refund" });
     }
 
-    // Check if payment was made within refund period (e.g., 7 days)
-    const paymentDate = new Date(payment.paidAt);
-    const currentDate = new Date();
-    const daysDiff = (currentDate - paymentDate) / (1000 * 60 * 60 * 24);
-
-    if (daysDiff > 7) {
-      return res.status(400).json({
-        success: false,
-        message: 'Refund period has expired (7 days)'
-      });
-    }
-
-    // In a real scenario, you would call Razorpay refund API here
-    // For now, we'll just update the payment status
-    payment.status = 'refunded';
+    payment.status = "refunded";
     payment.refund = {
       amount: payment.amount,
-      reason: reason || 'Customer request',
+      reason: req.body.reason || "User requested",
       processedAt: new Date()
     };
-    
+
     await payment.save();
 
-    res.json({
-      success: true,
-      message: 'Refund initiated successfully',
-      data: {
-        payment
-      }
-    });
+    res.json({ success: true, message: "Refund initiated", data: { payment } });
 
-  } catch (error) {
-    console.error('Initiate refund error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error initiating refund'
-    });
+  } catch (err) {
+    console.error("Refund error:", err);
+    res.status(500).json({ success: false, message: "Error initiating refund" });
   }
-};
-
-module.exports = {
-  createPaymentOrder,
-  verifyPaymentController,
-  getPaymentHistory,
-  getPaymentById,
-  initiateRefund
 };

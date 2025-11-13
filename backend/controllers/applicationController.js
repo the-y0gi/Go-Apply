@@ -1,328 +1,93 @@
-const Application = require('../models/Application');
-const University = require('../models/University');
-const Program = require('../models/Program');
+const applicationService = require("../services/applicationService");
 
-//POST->   Create new application
-const createApplication = async (req, res) => {
+// POST -> create application
+exports.createApplication = async (req, res) => {
   try {
-    const { universityId, programId, personalStatement, recommendationLetters } = req.body;
-
-    // Check if university and program exist
-    const university = await University.findById(universityId);
-    const program = await Program.findById(programId);
-
-    if (!university || !program) {
-      return res.status(404).json({
-        success: false,
-        message: 'University or program not found'
-      });
-    }
-
-    // Check if application already exists
-    const existingApplication = await Application.findOne({
-      userId: req.user._id,
-      universityId,
-      programId
-    });
-
-    if (existingApplication) {
-      return res.status(400).json({
-        success: false,
-        message: 'Application already exists for this program'
-      });
-    }
-
-    // Create new application
-    const application = new Application({
-      userId: req.user._id,
-      universityId,
-      programId,
-      personalStatement,
-      recommendationLetters: recommendationLetters || [],
-      deadline: program.applicationDeadline,
-      applicationFee: program.tuitionFee?.amount ? program.tuitionFee.amount * 0.1 : 100 // 10% of tuition or default 100
-    });
-
-    await application.save();
-
-    // Populate the application with university and program details
-    await application.populate('universityId', 'name country logoUrl');
-    await application.populate('programId', 'name degreeType fieldOfStudy tuitionFee');
-
-    res.status(201).json({
-      success: true,
-      message: 'Application created successfully',
-      data: {
-        application
-      }
-    });
-
+    const application = await applicationService.createNewApplication(req.user._id, req.body);
+    res.status(201).json({ success: true, message: "Application created successfully", data: { application } });
   } catch (error) {
-    console.error('Create application error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error creating application',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    console.error("Create Application Error:", error);
+    res.status(400).json({ success: false, message: error.message || "Error creating application" });
   }
 };
 
-// GET->   Get applications with optional filters
-const getApplications = async (req, res) => {
+exports.getApplications = async (req, res) => {
   try {
-    const { status, page = 1, limit = 10 } = req.query;
-    
-    let filter = { userId: req.user._id };
-    
-    if (status && status !== 'all') {
-      filter.status = status;
-    }
-
-    const applications = await Application.find(filter)
-      .populate('universityId', 'name country logoUrl city')
-      .populate('programId', 'name degreeType fieldOfStudy tuitionFee duration')
-      .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
-
-    const total = await Application.countDocuments(filter);
-
-    res.json({
-      success: true,
-      data: {
-        applications,
-        pagination: {
-          current: parseInt(page),
-          pages: Math.ceil(total / limit),
-          total
-        }
-      }
-    });
-
+    const data = await applicationService.getAllApplications(req.user._id, req.query);
+    res.json({ success: true, data });
   } catch (error) {
-    console.error('Get applications error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching applications'
-    });
+    console.error("Get Applications Error:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-//GET->   Get single application by ID
-const getApplication = async (req, res) => {
+exports.getApplication = async (req, res) => {
   try {
-    const application = await Application.findOne({
-      _id: req.params.id,
-      userId: req.user._id
-    })
-      .populate('universityId')
-      .populate('programId');
-
-    if (!application) {
-      return res.status(404).json({
-        success: false,
-        message: 'Application not found'
-      });
-    }
-
-    // Increment view count
-    application.views += 1;
-    application.lastViewedAt = new Date();
-    await application.save();
-
-    res.json({
-      success: true,
-      data: {
-        application
-      }
-    });
-
+    const application = await applicationService.getApplicationById(req.user._id, req.params.id);
+    res.json({ success: true, data: { application } });
   } catch (error) {
-    console.error('Get application error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching application'
-    });
+    console.error("Get Application Error:", error);
+    res.status(404).json({ success: false, message: error.message });
   }
 };
 
-//PUT->   Update application
-const updateApplication = async (req, res) => {
+exports.updateApplication = async (req, res) => {
   try {
-    const {
-      personalStatement,
-      recommendationLetters,
-      progress,
-      notes
-    } = req.body;
-
-    const application = await Application.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user._id },
-      {
-        ...(personalStatement && { personalStatement }),
-        ...(recommendationLetters && { recommendationLetters }),
-        ...(progress && { progress }),
-        ...(notes && { 
-          $push: { 
-            notes: {
-              content: notes,
-              addedBy: 'student',
-              addedAt: new Date()
-            }
-          }
-        }),
-        updatedAt: new Date()
-      },
-      { new: true, runValidators: true }
-    )
-      .populate('universityId', 'name country logoUrl')
-      .populate('programId', 'name degreeType fieldOfStudy tuitionFee');
-
-    if (!application) {
-      return res.status(404).json({
-        success: false,
-        message: 'Application not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Application updated successfully',
-      data: {
-        application
-      }
-    });
-
+    const application = await applicationService.updateApplicationById(req.user._id, req.params.id, req.body);
+    res.json({ success: true, message: "Application updated successfully", data: { application } });
   } catch (error) {
-    console.error('Update application error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating application'
-    });
+    console.error("Update Application Error:", error);
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-//DELETE->   Delete application
-const deleteApplication = async (req, res) => {
+exports.updateApplicationProgress = async (req, res) => {
   try {
-    const application = await Application.findOneAndDelete({
-      _id: req.params.id,
-      userId: req.user._id
-    });
-
-    if (!application) {
-      return res.status(404).json({
-        success: false,
-        message: 'Application not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Application deleted successfully'
-    });
-
+    // req.body.progress expected as partial object e.g. { documents: true }
+    const application = await applicationService.updateProgress(req.params.id, req.body.progress);
+    res.json({ success: true, message: "Application progress updated successfully", data: { application } });
   } catch (error) {
-    console.error('Delete application error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error deleting application'
-    });
+    console.error("Update Progress Error:", error);
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-//POST->   Submit application
-const submitApplication = async (req, res) => {
+exports.deleteApplication = async (req, res) => {
   try {
-    const application = await Application.findOne({
-      _id: req.params.id,
-      userId: req.user._id
-    });
-
-    if (!application) {
-      return res.status(404).json({
-        success: false,
-        message: 'Application not found'
-      });
-    }
-
-    if (application.status === 'submitted') {
-      return res.status(400).json({
-        success: false,
-        message: 'Application already submitted'
-      });
-    }
-
-    // Check if application is complete (basic validation)
-    const requiredProgress = ['personalInfo', 'academicInfo', 'documents'];
-    const isComplete = requiredProgress.every(step => application.progress[step]);
-
-    if (!isComplete) {
-      return res.status(400).json({
-        success: false,
-        message: 'Application is not complete. Please complete all required sections.'
-      });
-    }
-
-    // Update application status
-    application.status = 'submitted';
-    application.submittedAt = new Date();
-    application.progress.submitted = true;
-    await application.save();
-
-    await application.populate('universityId', 'name country');
-    await application.populate('programId', 'name degreeType');
-
-    res.json({
-      success: true,
-      message: 'Application submitted successfully',
-      data: {
-        application
-      }
-    });
-
+    await applicationService.deleteApplicationById(req.user._id, req.params.id);
+    res.json({ success: true, message: "Application deleted successfully" });
   } catch (error) {
-    console.error('Submit application error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error submitting application'
-    });
+    console.error("Delete Application Error:", error);
+    res.status(404).json({ success: false, message: error.message });
   }
 };
 
-// GET->   Get documents for an application
-const getApplicationDocuments = async (req, res) => {
+exports.submitApplication = async (req, res) => {
   try {
-    const Document = require('../models/Document');
-    
-    const documents = await Document.find({
-      applicationId: req.params.id,
-      userId: req.user._id
-    }).sort({ uploadedAt: -1 });
-
-    res.json({
-      success: true,
-      data: {
-        documents,
-        count: documents.length
-      }
-    });
-
+    const application = await applicationService.submitApplicationById(req.user._id, req.params.id);
+    res.json({ success: true, message: "Application submitted successfully", data: { application } });
   } catch (error) {
-    console.error('Get application documents error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching application documents'
-    });
+    console.error("Submit Application Error:", error);
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-module.exports = {
-  createApplication,
-  getApplications,
-  getApplication,
-  updateApplication,
-  deleteApplication,
-  submitApplication,
-  getApplicationDocuments
+exports.getApplicationDocuments = async (req, res) => {
+  try {
+    const data = await applicationService.getDocumentsForApplication(req.user._id, req.params.id);
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error("Get Application Documents Error:", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.getProgramById = async (req, res) => {
+  try {
+    const program = await applicationService.getProgramById(req.params.id);
+    res.json({ success: true, data: { program } });
+  } catch (error) {
+    console.error("Get Program Error:", error);
+    res.status(404).json({ success: false, message: error.message });
+  }
 };

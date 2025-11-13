@@ -49,21 +49,21 @@ const documentSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['uploaded', 'verified', 'rejected'],
-    default: 'uploaded'
+    default: 'verified'
   },
   
-  verifiedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
+  // verifiedBy: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'User'
+  // },
   
-  verifiedAt: Date,
+  // verifiedAt: Date,
   
-  rejectionReason: String,
+  // rejectionReason: String,
   
-  // Metadata
-  description: String,
-  tags: [String],
+  // // Metadata
+  // description: String,
+  // tags: [String],
   
   isPublic: {
     type: Boolean,

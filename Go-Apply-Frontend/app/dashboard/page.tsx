@@ -1,29 +1,30 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import ProtectedRoute from "@/components/auth/ProtectedRoute"
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar"
-import DashboardHeader from "@/components/dashboard/DashboardHeader"
-import DashboardContent from "@/components/dashboard/DashboardContent"
-
+import { useState } from "react";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import DashboardContent from "@/components/dashboard/DashboardContent";
+import DashboardHome from "@/components/dashboard/DashBoardHome";
 export default function DashboardPage() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <ProtectedRoute>
       <div className="flex h-screen overflow-hidden">
-        <DashboardSidebar 
-          collapsed={sidebarCollapsed} 
-          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
+        <DashboardSidebar
+          collapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
-        
+
         <div className="flex-1 flex flex-col overflow-hidden">
           <DashboardHeader />
           <main className="flex-1 overflow-y-auto">
-            <DashboardContent />
+            {/* <DashboardContent /> */}
+            <DashboardHome />
           </main>
         </div>
       </div>
     </ProtectedRoute>
-  )
+  );
 }

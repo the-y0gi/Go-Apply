@@ -67,7 +67,14 @@ const paymentSchema = new mongoose.Schema({
   
   // Metadata
   ipAddress: String,
-  userAgent: String
+  userAgent: String,
+
+  gatewayResponse: {
+    type: Object
+  },
+  paymentDate: {
+    type: Date
+  },
 }, {
   timestamps: true
 });

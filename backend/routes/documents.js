@@ -6,7 +6,8 @@ const {
   getDocuments,
   deleteDocument,
   getDocumentById,
-  updateDocument
+  updateDocument,
+ 
 } = require('../controllers/documentController');
 
 const router = express.Router();

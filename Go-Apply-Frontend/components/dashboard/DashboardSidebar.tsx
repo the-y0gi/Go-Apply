@@ -32,10 +32,10 @@ const menuItems = [
   { icon: Search, label: "Find Programs", href: "/dashboard/search" },
   { icon: BookOpen, label: "My Applications", href: "/dashboard/applications", badge: "3" },
   { icon: FileText, label: "Documents", href: "/dashboard/documents" },
-  { icon: Calendar, label: "Deadlines", href: "/dashboard/deadlines" },
-  { icon: MessageSquare, label: "Messages", href: "/dashboard/messages", badge: "2" },
+  // { icon: Calendar, label: "Deadlines", href: "/dashboard/deadlines" },
+  // { icon: MessageSquare, label: "Messages", href: "/dashboard/messages", badge: "2" },
   { icon: CreditCard, label: "Payments", href: "/dashboard/payments" },
-  { icon: GraduationCap, label: "Mentorship", href: "/dashboard/mentorship" },
+  // { icon: GraduationCap, label: "Mentorship", href: "/dashboard/mentorship" },
 ]
 
 const bottomItems = [

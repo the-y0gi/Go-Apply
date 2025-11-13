@@ -136,7 +136,7 @@ const searchPrograms = async (req, res) => {
       filter.universityId = { $in: universityIds };
       
       programs = await Program.find(filter)
-        .populate('universityId')
+        .populate('universityId', 'name country city logoUrl ranking')
         .sort(sort)
         .limit(limit * 1)
         .skip((page - 1) * limit);

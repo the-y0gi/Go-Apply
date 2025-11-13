@@ -67,6 +67,20 @@ export default function Navbar() {
     return () => ctx.revert()
   }, [])
 
+  //find program
+  useEffect(() => {
+  const handleOpenSignIn = () => setSignInOpen(true)
+  const handleOpenRegister = () => setRegisterOpen(true)
+
+  window.addEventListener("openSignIn", handleOpenSignIn)
+  window.addEventListener("openRegister", handleOpenRegister)
+
+  return () => {
+    window.removeEventListener("openSignIn", handleOpenSignIn)
+    window.removeEventListener("openRegister", handleOpenRegister)
+  }
+}, [])
+
   const handleRegisterComplete = (userData: { email: string; password: string; firstName: string; lastName: string }) => {
     setUserEmail(userData.email)
     setRegisterOpen(false)

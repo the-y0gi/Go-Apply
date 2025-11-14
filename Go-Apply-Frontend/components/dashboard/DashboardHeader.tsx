@@ -59,14 +59,14 @@ export default function DashboardHeader() {
 
       <div className="flex items-center gap-4">
         {/* Search */}
-        <div className="relative hidden md:block">
+        {/* <div className="relative hidden md:block">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             type="text"
             placeholder="Search programs, universities..."
             className="pl-10 w-64 bg-background/50 backdrop-blur border-border/50"
           />
-        </div>
+        </div> */}
 
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative">

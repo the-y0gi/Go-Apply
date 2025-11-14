@@ -129,7 +129,7 @@ export default function ApplicationsPage() {
 
   // Payment handler
   const handlePayment = async (applicationId: string) => {
-      router.push(`/dashboard/payments?applicationId=${applicationId}`);
+    router.push(`/dashboard/payments?applicationId=${applicationId}`);
   };
 
   //Update Application After Modal Changes
@@ -429,7 +429,7 @@ export default function ApplicationsPage() {
                               )}
 
                               {/* PAYMENT BUTTON */}
-                              {app.progress?.payment ? (
+                              {/* {app.progress?.payment ? (
                                 <Badge className="bg-green-100 text-green-800">
                                   <CheckCircle className="w-3 h-3 mr-1" />
                                   Paid
@@ -448,6 +448,30 @@ export default function ApplicationsPage() {
                                   className="text-gray-500"
                                 >
                                   Complete Documents
+                                </Badge>
+                              )} */}
+                              {/* PAYMENT BUTTON */}
+                              {app.progress?.payment ? (
+                                <Badge className="bg-green-100 text-green-800">
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Paid
+                                </Badge>
+                              ) : app.progress?.personalInfo &&
+                                app.progress?.academicInfo &&
+                                app.progress?.documents ? (
+                                <Button
+                                  size="sm"
+                                  className="bg-green-700 hover:bg-green-800 text-white"
+                                  onClick={() => handlePayment(app._id)}
+                                >
+                                  Payment
+                                </Button>
+                              ) : (
+                                <Badge
+                                  variant="outline"
+                                  className="text-gray-500"
+                                >
+                                  Complete All Steps
                                 </Badge>
                               )}
                             </div>

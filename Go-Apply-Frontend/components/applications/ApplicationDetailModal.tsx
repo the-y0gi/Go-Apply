@@ -97,9 +97,35 @@ export default function ApplicationDetailModal({
   }, [application]);
 
   //Auto progress update when all docs uploaded
+  // useEffect(() => {
+  //   const updateProgressIfAllDocsUploaded = async () => {
+  //     if (docs.missing.length === 0) {
+  //       try {
+  //         const token = localStorage
+  //           .getItem("authToken")
+  //           ?.replace(/^"|"$/g, "");
+  //         const res = await axios.patch(
+  //           `${API_URL}/applications/${application._id}/update-progress`,
+  //           { progress: { ...application.progress, documents: true } },
+  //           { headers: { Authorization: `Bearer ${token}` } }
+  //         );
+  //         onUpdate(res.data.data.application);
+  //       } catch (err) {
+  //         console.error("Progress update failed:", err);
+  //       }
+  //     }
+  //   };
+
+  //   updateProgressIfAllDocsUploaded();
+  // }, [docs.missing.length]);
+
   useEffect(() => {
     const updateProgressIfAllDocsUploaded = async () => {
-      if (docs.missing.length === 0) {
+      const allRequiredDocsUploaded =
+        docs.required.length > 0 &&
+        docs.uploaded.length >= docs.required.length;
+
+      if (allRequiredDocsUploaded && !application.progress?.documents) {
         try {
           const token = localStorage
             .getItem("authToken")
@@ -110,6 +136,12 @@ export default function ApplicationDetailModal({
             { headers: { Authorization: `Bearer ${token}` } }
           );
           onUpdate(res.data.data.application);
+
+          toast({
+            title: "All Documents Uploaded",
+            description:
+              "All required documents have been uploaded successfully!",
+          });
         } catch (err) {
           console.error("Progress update failed:", err);
         }
@@ -117,7 +149,11 @@ export default function ApplicationDetailModal({
     };
 
     updateProgressIfAllDocsUploaded();
-  }, [docs.missing.length]);
+  }, [
+    docs.uploaded.length,
+    docs.required.length,
+    application.progress?.documents,
+  ]);
 
   // Upload missing document
   const handleUploadDocument = async (type: string) => {
@@ -167,35 +203,6 @@ export default function ApplicationDetailModal({
       }
     };
     input.click();
-  };
-
-  // Payment & submission
-  const handlePayment = async () => {
-    try {
-      setSubmitting(true);
-      const token = localStorage.getItem("authToken")?.replace(/^"|"$/g, "");
-      const res = await axios.post(
-        `${API_URL}/applications/${application._id}/submit`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      toast({
-        title: "Application Submitted",
-        description: "Your application was successfully submitted.",
-      });
-
-      onUpdate(res.data.data.application);
-      onClose();
-    } catch (err) {
-      toast({
-        title: "Submission Failed",
-        description: "Something went wrong while submitting your application.",
-        variant: "destructive",
-      });
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   if (loading)
@@ -269,7 +276,7 @@ export default function ApplicationDetailModal({
         </div>
 
         {/* Required Documents */}
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <h3 className="text-lg font-semibold mb-3">Required Documents</h3>
           <div className="space-y-2">
             {docs.required.map((type) => {
@@ -297,17 +304,46 @@ export default function ApplicationDetailModal({
               );
             })}
           </div>
+        </div> */}
 
-          {/* Payment Button */}
-          {/* {allDocsUploaded && (
-            <Button
-              className="w-full mt-4 bg-primary hover:bg-primary/90"
-              onClick={handlePayment}
-              disabled={submitting}
-            >
-              {submitting ? "Processing..." : "Proceed to Payment & Submit"}
-            </Button>
-          )} */}
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-3">Required Documents</h3>
+
+          <div className="mb-4 p-3 bg-blue-50 rounded-md">
+            <p className="text-sm text-blue-700">
+              {docs.uploaded.length} of {docs.required.length} documents
+              uploaded
+              {docs.uploaded.length === docs.required.length &&
+                " — All documents Uploaded!"}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            {docs.required.map((type) => {
+              const uploaded = docs.uploaded.some((d) => d.type === type);
+              return (
+                <div
+                  key={type}
+                  className="flex items-center justify-between border p-2 rounded-md"
+                >
+                  <span>{type.toUpperCase()}</span>
+                  {uploaded ? (
+                    <Badge className="bg-green-100 text-green-800">
+                      Uploaded
+                    </Badge>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={() => handleUploadDocument(type)}
+                      disabled={uploading}
+                    >
+                      {uploading ? "Uploading..." : "Upload"}
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

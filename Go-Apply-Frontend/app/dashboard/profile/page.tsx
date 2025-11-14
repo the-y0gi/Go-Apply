@@ -50,7 +50,8 @@ import AddAchievementForm from "./AddAchievementForm";
 import axios from "axios";
 
 // API Base URL
-const API_BASE_URL = "http://localhost:5000/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
 
 export default function ProfilePage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -115,7 +116,7 @@ export default function ProfilePage() {
       const rawToken = localStorage.getItem("authToken") || "";
       const token = rawToken.replace(/^"|"$/g, "").trim();
 
-      const response = await axios.get(`${API_BASE_URL}/users/profile`, {
+      const response = await axios.get(`${API_URL}/users/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -191,7 +192,7 @@ export default function ProfilePage() {
       const token = rawToken.replace(/^"|"$/g, "").trim();
 
       await axios.put(
-        `${API_BASE_URL}/users/profile`,
+        `${API_URL}/users/profile`,
         { experience: updatedList },
         {
           headers: {
@@ -243,7 +244,7 @@ export default function ProfilePage() {
       const token = rawToken.replace(/^"|"$/g, "").trim();
 
       await axios.put(
-        `${API_BASE_URL}/users/profile`,
+        `${API_URL}/users/profile`,
         { achievements: updatedAchievements },
         {
           headers: {
@@ -283,7 +284,7 @@ export default function ProfilePage() {
       const token = rawToken.replace(/^"|"$/g, "").trim();
 
       await axios.put(
-        `${API_BASE_URL}/users/profile`,
+        `${API_URL}/users/profile`,
         { educationHistory: newEducationHistory },
         {
           headers: {
@@ -320,7 +321,7 @@ export default function ProfilePage() {
       const token = rawToken.replace(/^"|"$/g, "").trim();
 
       await axios.put(
-        `${API_BASE_URL}/users/profile`,
+        `${API_URL}/users/profile`,
         { technicalSkills: updatedSkills },
         {
           headers: {
@@ -351,7 +352,7 @@ export default function ProfilePage() {
               const rawToken = localStorage.getItem("authToken") || ""
         const token = rawToken.replace(/^"|"$/g, "").trim()
       await axios.put(
-        `${API_BASE_URL}/users/profile`,
+        `${API_URL}/users/profile`,
         { languages: newLanguages },
         {
           headers: {
@@ -397,7 +398,7 @@ export default function ProfilePage() {
               const rawToken = localStorage.getItem("authToken") || ""
         const token = rawToken.replace(/^"|"$/g, "").trim()
       await axios.put(
-        `${API_BASE_URL}/users/profile`,
+        `${API_URL}/users/profile`,
         { languages: updatedLanguages },
         {
           headers: {
@@ -429,7 +430,7 @@ export default function ProfilePage() {
               const rawToken = localStorage.getItem("authToken") || ""
         const token = rawToken.replace(/^"|"$/g, "").trim()
       await axios.put(
-        `${API_BASE_URL}/users/profile`,
+        `${API_URL}/users/profile`,
         { achievements: newAchievements },
         {
           headers: {
@@ -462,7 +463,7 @@ export default function ProfilePage() {
       const token = rawToken.replace(/^"|"$/g, "").trim();
       // Update profile through backend API
       const response = await axios.put(
-        `${API_BASE_URL}/users/profile`,
+        `${API_URL}/users/profile`,
         {
           phone: profileData.phone,
           dateOfBirth: profileData.dateOfBirth,

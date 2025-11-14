@@ -274,6 +274,9 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+
 export default function Navbar() {
   const navRef = useRef<HTMLElement>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -336,7 +339,7 @@ export default function Navbar() {
     const token = localStorage.getItem("authToken");
     profileData.token = token;
 
-    await axios.post("http://localhost:5000/api/users/questionnaire", profileData, {
+    await axios.post(`${API_URL}/users/questionnaire`, profileData, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${profileData.token}`,

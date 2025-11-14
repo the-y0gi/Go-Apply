@@ -221,7 +221,18 @@ export default function PaymentsPage() {
 
         setApplications(apps);
         setPayments(normalizedPays);
-        setMergedData(mergedUI);
+        // setMergedData(mergedUI);
+
+        const eligibleMergedUI = mergedUI.filter((item) => {
+          const progress = item.application?.progress;
+          return (
+            progress?.personalInfo &&
+            progress?.academicInfo &&
+            progress?.documents
+          );
+        });
+
+        setMergedData(eligibleMergedUI);
       } catch (err) {
         console.error("Payment load error:", err);
       } finally {
@@ -236,15 +247,12 @@ export default function PaymentsPage() {
 
   const handleDownloadReceipt = async (paymentId: string) => {
     try {
-      const response = await axios.get(
-        `${API}/payments/${paymentId}/receipt`,
-        {
-          responseType: "blob",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(`${API}/payments/${paymentId}/receipt`, {
+        responseType: "blob",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       // Create blob link
       const blob = new Blob([response.data], { type: "application/pdf" });
@@ -272,6 +280,16 @@ export default function PaymentsPage() {
     );
     if (!application) return alert("Application not found!");
 
+    const isEligibleForPayment =
+      application.progress?.personalInfo &&
+      application.progress?.academicInfo &&
+      application.progress?.documents;
+
+    if (!isEligibleForPayment) {
+      return alert(
+        "Please complete Personal Info, Academic Info, and Documents before making payment."
+      );
+    }
     // choose amount: prefer application.applicationFee else fallback
     const amount =
       application.programId?.applicationFee ||
@@ -659,7 +677,7 @@ export default function PaymentsPage() {
                                             </p>
                                             <p className="font-medium text-foreground">
                                               {item.amount
-                                                ? item.amount 
+                                                ? item.amount
                                                 : app.programId
                                                     ?.applicationFee ||
                                                   "—"}{" "}
@@ -689,15 +707,17 @@ export default function PaymentsPage() {
                                         </div>
                                       </div>
 
-                                      <div className="flex flex-col gap-2 ml-4">
+                                      {/* <div className="flex flex-col gap-2 ml-4">
                                         {isPaid ? (
                                           <Button
                                             variant="outline"
                                             size="sm"
                                             className="bg-background/50 backdrop-blur border-border/50"
                                             onClick={() =>
-                                            handleDownloadReceipt(item.paymentId)
-                                          }
+                                              handleDownloadReceipt(
+                                                item.paymentId
+                                              )
+                                            }
                                           >
                                             <Download className="w-4 h-4 mr-1" />
                                             Receipt
@@ -719,6 +739,64 @@ export default function PaymentsPage() {
                                             onClick={() =>
                                               startPayment(app._id)
                                             }
+                                          >
+                                            Pay Now
+                                          </Button>
+                                        )}
+                                      </div> */}
+
+                                      <div className="flex flex-col gap-2 ml-4">
+                                        {isPaid ? (
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="bg-background/50 backdrop-blur border-border/50"
+                                            onClick={() =>
+                                              handleDownloadReceipt(
+                                                item.paymentId
+                                              )
+                                            }
+                                          >
+                                            <Download className="w-4 h-4 mr-1" />
+                                            Receipt
+                                          </Button>
+                                        ) : isPending ? (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="text-primary border-primary hover:bg-primary/10"
+                                            onClick={() => {
+                                              const isEligible =
+                                                app.progress?.personalInfo &&
+                                                app.progress?.academicInfo &&
+                                                app.progress?.documents;
+                                              if (!isEligible) {
+                                                alert(
+                                                  "Please complete Personal Info, Academic Info, and Documents before making payment."
+                                                );
+                                                return;
+                                              }
+                                              startPayment(app._id);
+                                            }}
+                                          >
+                                            Pay Now
+                                          </Button>
+                                        ) : (
+                                          <Button
+                                            size="sm"
+                                            onClick={() => {
+                                              const isEligible =
+                                                app.progress?.personalInfo &&
+                                                app.progress?.academicInfo &&
+                                                app.progress?.documents;
+                                              if (!isEligible) {
+                                                alert(
+                                                  "Please complete Personal Info, Academic Info, and Documents before making payment."
+                                                );
+                                                return;
+                                              }
+                                              startPayment(app._id);
+                                            }}
                                           >
                                             Pay Now
                                           </Button>

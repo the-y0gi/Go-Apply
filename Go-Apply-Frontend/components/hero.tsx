@@ -299,7 +299,7 @@ export default function Hero() {
               />
               <h2 className="mb-4 text-lg font-medium">Quick program search</h2>
               <form className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-1.5">
+                {/* <div className="space-y-1.5">
                   <Label htmlFor="country">Country</Label>
                   <Select>
                     <SelectTrigger id="country" aria-label="Country">
@@ -312,7 +312,30 @@ export default function Hero() {
                       <SelectItem value="au">Australia</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </div> */}
+
+<div className="space-y-1.5">
+  <Label htmlFor="country">Country</Label>
+
+  {/* Styled static box */}
+  <div
+    id="country"
+    className="
+      w-full px-4 py-2.5 
+      bg-background 
+      border border-border 
+      rounded-md 
+      text-foreground 
+      shadow-sm 
+      cursor-default 
+      font-medium
+      hover:border-primary 
+      transition
+    "
+  >
+    Australia
+  </div>
+</div>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="degree">Degree level</Label>

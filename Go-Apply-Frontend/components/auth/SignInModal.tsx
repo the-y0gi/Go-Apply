@@ -18,6 +18,9 @@ interface SignInModalProps {
   onSwitchToRegister: () => void;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+
 export default function SignInModal({
   isOpen,
   onClose,
@@ -46,7 +49,7 @@ export default function SignInModal({
 
     try {
       const { data } = await axios.post(
-        "http://localhost:5000/api/auth/login",
+         `${API_URL}/auth/login`,
         formData,
         {
           headers: { "Content-Type": "application/json" },
@@ -248,7 +251,7 @@ export default function SignInModal({
         <div className="space-y-3">
           <Button
             onClick={() =>
-              (window.location.href = "http://localhost:5000/api/auth/google")
+              (window.location.href =  `${API_URL}/auth/google`)
             }
             variant="outline"
             className="w-full bg-background/50 backdrop-blur border-border/50"
@@ -276,7 +279,7 @@ export default function SignInModal({
 
           <Button
             onClick={() =>
-              (window.location.href = "http://localhost:5000/api/auth/facebook")
+              (window.location.href =  `${API_URL}/auth/facebook`)
             }
             variant="outline"
             className="w-full bg-background/50 backdrop-blur border-border/50"

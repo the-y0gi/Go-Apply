@@ -68,6 +68,9 @@ const toast = {
   },
 };
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+
 // Programs loaded from backend
 const usePrograms = () => {
   const [programs, setPrograms] = useState<University[]>([]);
@@ -84,7 +87,7 @@ const usePrograms = () => {
         const res = await axios.get<{
           success: boolean;
           data: { programs: Program[] };
-        }>("http://localhost:5000/api/search/programs");
+        }>(`${API_URL}/search/programs`);
 
         if (!mounted) return;
 

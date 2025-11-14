@@ -6,6 +6,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SignInRequest } from "@/models/user";
 import axios from "axios";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+
 export default function SocialLoginPage() {
   const router = useRouter();
   const params = useSearchParams();
@@ -26,7 +29,7 @@ export default function SocialLoginPage() {
     const handleSocialLogin = async () => {
       try {
         // Get user profile from backend
-        const { data } = await axios.get("http://localhost:5000/api/auth/me", {
+        const { data } = await axios.get(`${API_URL}/auth/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

@@ -1,0 +1,130 @@
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 24px;
+        color: #111;
+      }
+
+      h1 {
+        color: #16a34a; /* GoApply Green */
+        margin-bottom: 4px;
+      }
+
+      .section-title {
+        color: #16a34a; /* Green headings */
+        font-size: 18px;
+        margin-top: 24px;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+
+      .label {
+        font-weight: bold;
+        color: #16a34a; /* Green labels */
+      }
+
+      .value {
+        color: #111;
+      }
+
+      .line {
+        border-bottom: 1px solid #e5e5e5;
+        margin: 16px 0;
+      }
+
+      .footer {
+        color: #555;
+        margin-top: 30px;
+        font-size: 13px;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>GoApply - Payment Receipt</h1>
+    <p class="value">Receipt generated on: {{generated_date}}</p>
+
+    <div class="line"></div>
+
+    <div>
+      <div class="section-title">User Details</div>
+
+      <p>
+        <span class="label">Name:</span>
+        <span class="value">{{user_name}}</span>
+      </p>
+
+      <p>
+        <span class="label">Email:</span>
+        <span class="value">{{user_email}}</span>
+      </p>
+    </div>
+
+    <div class="line"></div>
+
+    <div>
+      <div class="section-title">Application Details</div>
+
+      <p>
+        <span class="label">University:</span>
+        <span class="value">{{university_name}}</span>
+      </p>
+
+      <p>
+        <span class="label">Country:</span>
+        <span class="value">{{university_country}}</span>
+      </p>
+
+      <p>
+        <span class="label">Program:</span>
+        <span class="value">{{program_name}}</span>
+      </p>
+
+      <p>
+        <span class="label">Degree Type:</span>
+        <span class="value">{{degree_type}}</span>
+      </p>
+    </div>
+
+    <div class="line"></div>
+
+    <div>
+      <div class="section-title">Payment Details</div>
+
+      <p>
+        <span class="label">Order ID:</span>
+        <span class="value">{{order_id}}</span>
+      </p>
+
+      <p>
+        <span class="label">Transaction ID:</span>
+        <span class="value">{{transaction_id}}</span>
+      </p>
+
+      <p>
+        <span class="label">Amount:</span>
+        <span class="value">{{amount}} {{currency}}</span>
+      </p>
+
+      <p>
+        <span class="label">Status:</span>
+        <span class="value">{{status}}</span>
+      </p>
+
+      <p>
+        <span class="label">Paid At:</span>
+        <span class="value">{{paid_date}}</span>
+      </p>
+    </div>
+
+    <div class="footer">
+      This is an electronically generated receipt. No signature required.
+      <br />
+      <br />
+      Thank you for using <strong>GoApply!</strong>
+    </div>
+  </body>
+</html>

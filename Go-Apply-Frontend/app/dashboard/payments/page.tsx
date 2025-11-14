@@ -198,6 +198,7 @@ export default function PaymentsPage() {
             application: app,
             payment: selPayment,
             uiStatus,
+            paymentId: selPayment ? String(selPayment._id) : undefined,
             amount: selPayment
               ? selPayment.amount || selPayment.amountPaid
               : undefined,
@@ -232,6 +233,35 @@ export default function PaymentsPage() {
 
     load();
   }, [token, refreshFlag]);
+
+  const handleDownloadReceipt = async (paymentId: string) => {
+    try {
+      const response = await axios.get(
+        `${API}/payments/${paymentId}/receipt`,
+        {
+          responseType: "blob",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Create blob link
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      // Download it
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `GoApply_Receipt_${paymentId}.pdf`;
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Receipt download failed:", error);
+      alert("Failed to download receipt");
+    }
+  };
 
   // Single unified startPayment function (uses backend for order + key)
   const startPayment = async (appId: string) => {
@@ -665,6 +695,9 @@ export default function PaymentsPage() {
                                             variant="outline"
                                             size="sm"
                                             className="bg-background/50 backdrop-blur border-border/50"
+                                            onClick={() =>
+                                            handleDownloadReceipt(item.paymentId)
+                                          }
                                           >
                                             <Download className="w-4 h-4 mr-1" />
                                             Receipt

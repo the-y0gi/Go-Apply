@@ -3,6 +3,9 @@ const Application = require('../models/Application');
 const { createOrder, verifyPayment, getPaymentDetails } = require('../config/razorpay');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
+const fs = require("fs");
+const pdf = require("html-pdf");
+const path = require("path");
 
 //create payment
 exports.createPaymentOrder = async (req, res) => {
@@ -258,5 +261,64 @@ exports.initiateRefund = async (req, res) => {
   } catch (err) {
     console.error("Refund error:", err);
     res.status(500).json({ success: false, message: "Error initiating refund" });
+  }
+};
+
+
+exports.generatePaymentReceipt = async (req, res) => {
+  try {
+  const paymentId = req.params.id;
+
+  // Fetch payment, user, application...
+  const payment = await Payment.findById(paymentId);
+  if (!payment) return res.status(404).send("Payment not found");
+
+  const user = await User.findById(payment.userId);
+ const application = await Application.findById(payment.applicationId)
+  .populate("universityId")
+  .populate("programId");
+
+  // Load template file
+  const templatePath = path.join(process.cwd(), "templates", "payment-receipt.html");
+  let html = fs.readFileSync(templatePath, "utf8");
+
+  // Replace placeholders
+  html = html
+        .replace("{{generated_date}}", new Date().toLocaleString())
+  .replace(
+    "{{user_name}}",
+    user?.fullName ||
+      `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
+      "N/A"
+  )
+  .replace("{{user_email}}", user?.email || "N/A")
+      // .replace("{{user_phone}}", user?.phone || "N/A")
+      // .replace("{{user_address}}", user?.address || "N/A")
+      .replace("{{university_name}}", application.universityId?.name || "N/A")
+      .replace("{{university_country}}", application.universityId?.country || "N/A")
+      .replace("{{program_name}}", application.programId?.name || "N/A")
+      .replace("{{degree_type}}", application.programId?.degreeType || "N/A")
+      .replace("{{order_id}}", payment.razorpayOrderId || "N/A")
+      .replace("{{transaction_id}}", payment.razorpayPaymentId || "N/A")
+      .replace("{{amount}}", payment.amount)
+      .replace("{{currency}}", payment.currency)
+      .replace("{{status}}", payment.status)
+      .replace("{{paid_date}}", new Date(payment.paidAt).toLocaleString());
+
+  // Convert to PDF
+  pdf.create(html).toBuffer((err, buffer) => {
+    if (err) return res.status(500).send("Error generating PDF");
+    
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=receipt_${paymentId}.pdf`
+    );
+    
+    res.send(buffer);
+  });
+  } catch (error) {
+    console.error("Receipt Error:", error);
+    res.status(500).send("Failed to generate receipt");
   }
 };

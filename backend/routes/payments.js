@@ -5,7 +5,8 @@ const {
   verifyPaymentController,
   getPaymentHistory,
   getPaymentById,
-  initiateRefund
+  initiateRefund,
+  generatePaymentReceipt
 } = require('../controllers/paymentController');
 
 const router = express.Router();
@@ -18,5 +19,7 @@ router.post('/verify', verifyPaymentController);
 router.get('/history', getPaymentHistory);
 router.get('/:id', getPaymentById);
 router.post('/:id/refund', initiateRefund);
+router.get('/:id/receipt', generatePaymentReceipt);
+
 
 module.exports = router;

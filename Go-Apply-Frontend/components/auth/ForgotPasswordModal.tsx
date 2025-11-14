@@ -13,6 +13,8 @@ interface ForgotPasswordModalProps {
   onClose: () => void;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
 export default function ForgotPasswordModal({
   isOpen,
   onClose,
@@ -33,7 +35,7 @@ export default function ForgotPasswordModal({
     setError("");
     try {
       const { data } = await axios.post(
-        "http://localhost:5000/api/auth/forgot-password",
+        `${API_URL}/auth/forgot-password`,
         { email }
       );
       setMessage(data.message);
@@ -51,7 +53,7 @@ export default function ForgotPasswordModal({
     setError("");
     try {
       const { data } = await axios.post(
-        "http://localhost:5000/api/auth/verify-reset-otp",
+       `${API_URL}/auth/verify-reset-otp`,
         { email, otp }
       );
       setMessage(data.message);
@@ -69,7 +71,7 @@ export default function ForgotPasswordModal({
     setError("");
     try {
       const { data } = await axios.post(
-        "http://localhost:5000/api/auth/reset-password",
+        `${API_URL}/auth/reset-password`,
         { email, otp, newPassword }
       );
       setMessage(data.message);

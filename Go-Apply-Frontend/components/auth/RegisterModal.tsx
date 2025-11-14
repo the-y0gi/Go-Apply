@@ -23,6 +23,9 @@ interface RegisterModalProps {
   }) => void;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+
 export default function RegisterModal({
   isOpen,
   onClose,
@@ -79,7 +82,7 @@ export default function RegisterModal({
       setLoading(true);
       try {
         const { data } = await axios.post(
-          "http://localhost:5000/api/auth/register",
+         `${API_URL}/auth/register`,
           formData,
           {
             headers: { "Content-Type": "application/json" },
@@ -364,7 +367,7 @@ export default function RegisterModal({
         <div className="space-y-3">
           <Button
             onClick={() =>
-              (window.location.href = "http://localhost:5000/api/auth/google")
+              (window.location.href =  `${API_URL}/auth/google`)
             }
             variant="outline"
             className="w-full bg-background/50 backdrop-blur border-border/50"
@@ -392,7 +395,7 @@ export default function RegisterModal({
 
           <Button
             onClick={() =>
-              (window.location.href = "http://localhost:5000/api/auth/facebook")
+              (window.location.href =  `${API_URL}/auth/facebook`)
             }
             variant="outline"
             className="w-full bg-background/50 backdrop-blur border-border/50"

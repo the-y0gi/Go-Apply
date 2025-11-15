@@ -401,7 +401,8 @@ export default function ProfilePage() {
     }
   };
 
-  const handleAddSkill = async () => {
+  const handleAddSkill = async (e: React.FormEvent) => {
+    e.preventDefault()
     if (!newSkill.trim()) return;
 
     try {

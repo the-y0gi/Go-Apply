@@ -152,13 +152,12 @@ export default function ApplicationsPage() {
   if (loading) {
     return (
       <ProtectedRoute>
-      
         <div className="p-6 flex items-center justify-center min-h-screen">
-  <div className="text-center">
-    <LoaderCircle className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-    <p className="text-muted-foreground">Loading your dashboard...</p>
-  </div>
-</div>
+          <div className="text-center">
+            <LoaderCircle className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading your dashboard...</p>
+          </div>
+        </div>
       </ProtectedRoute>
     );
   }

@@ -31,7 +31,8 @@ export default function AddAchievementForm({
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     if (!form.title || !form.date) {
       // toast.error("Title and Date are required!");
       // return;

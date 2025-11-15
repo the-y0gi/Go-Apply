@@ -220,7 +220,7 @@ export default function DashboardHeader() {
       setNotifications(response.data.data.notifications);
       setUnreadCount(response.data.data.unreadCount);
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+       console.error("Error fetching notifications:", error);
     } finally {
       setLoading(false);
     }
@@ -247,7 +247,7 @@ export default function DashboardHeader() {
         prev.map((n) => ({ ...n, isRead: true }))
       );
     } catch (error) {
-      console.error("Error marking notifications as read:", error);
+       console.error("Error marking notifications as read:", error);
     }
   };
 

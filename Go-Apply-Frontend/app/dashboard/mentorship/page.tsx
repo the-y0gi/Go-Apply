@@ -126,7 +126,7 @@ export default function MentorshipPage() {
 
   const toggleFavorite = (mentorId: number) => {
     // In a real app, this would update the backend
-    console.log(`Toggle favorite for mentor ${mentorId}`)
+  //  console.log(`Toggle favorite for mentor ${mentorId}`)
   }
 
   return (

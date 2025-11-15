@@ -113,7 +113,7 @@ export default function RegisterModal({
 
         onClose(); // Close the modal
       } catch (error) {
-        console.error("Registration error:", error);
+         console.error("Registration error:", error);
         setErrors({ general: "Registration failed. Please try again." });
       } finally {
         setLoading(false);
@@ -147,7 +147,7 @@ export default function RegisterModal({
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -50 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-md h-full bg-card/80 backdrop-blur-xl border-r border-border/50 p-8 flex flex-col justify-center overflow-y-auto scrollbar-hide"
+        className="relative z-10 w-full max-w-md h-full bg-card/80 backdrop-blur-xl border-r border-border/50 p-8 flex flex-col overflow-y-auto scrollbar-hide"
         onClick={(e) => e.stopPropagation()}
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >

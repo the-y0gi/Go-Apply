@@ -74,7 +74,7 @@ export default function SignInModal({
       onClose();
     } catch (err) {
       setError("Invalid email or password");
-      console.error("Sign in error:", err);
+       console.error("Sign in error:", err);
     } finally {
       setLoading(false);
     }

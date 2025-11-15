@@ -30,7 +30,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useRouter } from "next/navigation";
 import ApplicationDetailModal from "@/components/applications/ApplicationDetailModal";
-import toast from "react-hot-toast";
+import toast, {Toaster} from "react-hot-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -121,9 +121,9 @@ export default function ApplicationsPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setApplications((prev) => prev.filter((a) => a._id !== id));
-      alert("Application deleted successfully");
+      toast.success("Application deleted successfully");
     } catch (err) {
-      alert("Failed to delete application");
+      toast.error("Failed to delete application");
     }
   };
 
@@ -159,6 +159,7 @@ export default function ApplicationsPage() {
 
   return (
     <ProtectedRoute>
+      <Toaster position="top-right" />
       <div className="flex h-screen">
         {/* Sidebar */}
         <DashboardSidebar

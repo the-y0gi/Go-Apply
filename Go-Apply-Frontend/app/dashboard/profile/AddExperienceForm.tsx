@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Experience } from "@/models/user";
+import toast, { Toaster } from "react-hot-toast";
 
 interface AddExperienceFormProps {
   initialData?: Experience; // for editing
@@ -23,7 +24,7 @@ export default function AddExperienceForm({ initialData, onSave, onCancel }: Add
 
     // Validate Start Year
     if (startYear && (isNaN(Number(startYear)) || Number(startYear) < 1900 || Number(startYear) > currentYear)) {
-      alert("Start Year cannot be in the future!");
+      toast.error("Start Year cannot be in the future!");
       return;
     }
 
@@ -41,6 +42,7 @@ export default function AddExperienceForm({ initialData, onSave, onCancel }: Add
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <Toaster position="top-right" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label>Title</Label>

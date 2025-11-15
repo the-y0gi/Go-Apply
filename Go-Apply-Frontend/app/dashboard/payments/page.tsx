@@ -8,6 +8,7 @@ import { useSearchParams } from "next/navigation";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import toast, { Toaster } from "react-hot-toast";
 
 import {
   Card,
@@ -232,7 +233,7 @@ export default function PaymentsPage() {
 
         setMergedData(eligibleMergedUI);
       } catch (err) {
-        console.error("Payment load error:", err);
+      console.error("Payment load error:", err);
       } finally {
         setLoading(false);
         setLoadingApps(false);
@@ -265,18 +266,18 @@ export default function PaymentsPage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Receipt download failed:", error);
-      alert("Failed to download receipt");
+      toast.error("Failed to download receipt");
     }
   };
 
   // Single unified startPayment function (uses backend for order + key)
   const startPayment = async (appId: string) => {
-    if (!token) return alert("Login required!");
+    if (!token) return toast.error("Login required!");
 
     const application = applications.find(
       (a) => String(a._id) === String(appId)
     );
-    if (!application) return alert("Application not found!");
+    if (!application) return toast.error("Application not found!");
 
     const isEligibleForPayment =
       application.progress?.personalInfo &&
@@ -284,7 +285,7 @@ export default function PaymentsPage() {
       application.progress?.documents;
 
     if (!isEligibleForPayment) {
-      return alert(
+      toast.error(
         "Please complete Personal Info, Academic Info, and Documents before making payment."
       );
     }
@@ -305,12 +306,12 @@ export default function PaymentsPage() {
 
       if (!res?.data?.success) {
         console.error("Create order response:", res?.data);
-        return alert("Failed to create order");
+        return toast.error("Failed to create order");
       }
 
       const { order, key } = res.data.data;
 
-      if (!(window as any).Razorpay) return alert("Razorpay SDK not ready!");
+      if (!(window as any).Razorpay) return toast.error("Razorpay SDK not ready!");
 
       const options = {
         key,
@@ -332,15 +333,15 @@ export default function PaymentsPage() {
             );
 
             if (verify.data?.success) {
-              alert("Payment Successful!");
+              toast.success("Payment Successful!");
               // refresh lists
               setRefreshFlag((f) => f + 1);
             } else {
-              alert("Verification Failed");
+              toast.error("Verification Failed");
             }
           } catch (err) {
-            console.error("Verification error:", err);
-            alert("Verification request failed");
+           console.error("Verification error:", err);
+            toast.error("Verification request failed");
           }
         },
         prefill: {
@@ -354,7 +355,7 @@ export default function PaymentsPage() {
       new (window as any).Razorpay(options).open();
     } catch (err) {
       console.error("Payment Error:", err);
-      alert("Payment creation error");
+      toast.error("Payment creation error");
     } finally {
       setCreatingOrder(false);
     }
@@ -383,6 +384,7 @@ export default function PaymentsPage() {
 
   return (
     <ProtectedRoute>
+      <Toaster position="top-right" />
       <div className="flex h-screen">
         <DashboardSidebar
           collapsed={sidebarCollapsed}
@@ -679,6 +681,27 @@ export default function PaymentsPage() {
                                             <Download className="w-4 h-4 mr-1" />
                                             Receipt
                                           </Button>
+                                        ) : isPending ? (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="text-primary border-primary hover:bg-primary/10"
+                                            onClick={() => {
+                                              const isEligible =
+                                                app.progress?.personalInfo &&
+                                                app.progress?.academicInfo &&
+                                                app.progress?.documents;
+                                              if (!isEligible) {
+                                                toast.error(
+                                                  "Please complete Personal Info, Academic Info, and Documents before making payment."
+                                                );
+                                                return;
+                                              }
+                                              startPayment(app._id);
+                                            }}
+                                          >
+                                            Pay Now
+                                          </Button>
                                         ) : (
                                           <Button
                                             size="sm"
@@ -688,7 +711,7 @@ export default function PaymentsPage() {
                                                 app.progress?.academicInfo &&
                                                 app.progress?.documents;
                                               if (!isEligible) {
-                                                alert(
+                                                toast.error(
                                                   "Please complete Personal Info, Academic Info, and Documents before making payment."
                                                 );
                                                 return;

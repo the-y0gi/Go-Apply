@@ -31,7 +31,7 @@ export default function RegistrationQuestionnaire({
 }: RegistrationQuestionnaireProps) {
   const [currentStep, setCurrentStep] = useState(initialStep)
   const [profileData, setProfileData] = useState<Partial<UserProfile>>({})
-  console.log("Options:", FIELD_OF_STUDY_OPTIONS)
+  // console.log("Options:", FIELD_OF_STUDY_OPTIONS)
 
 
   const backgroundImage = currentStep >= 4 ? '/australia.jpg' : '/Landscape.jpg'
@@ -71,20 +71,20 @@ export default function RegistrationQuestionnaire({
   useEffect(() => {
     if (isOpen && initialStep > 1) {
       const savedProfile = localStorage.getItem("tempProfile");
-      console.log(" Saved profile from localStorage:", savedProfile);
+      // console.log(" Saved profile from localStorage:", savedProfile);
       if (savedProfile) {
         setProfileData(JSON.parse(savedProfile));
       }
       if (savedProfile) {
         try {
           const parsed = JSON.parse(savedProfile);
-          console.log("✅ Parsed profile:", parsed);
+          // console.log("✅ Parsed profile:", parsed);
             (parsed);
         } catch (err) {
-          console.error("❌ Failed to parse tempProfile:", err);
+           console.error(" Failed to parse tempProfile:", err);
         }
       } else {
-        console.warn("⚠️ No tempProfile found in localStorage");
+        // console.warn(" No tempProfile found in localStorage");
       }
     }
   }, [isOpen, initialStep])
@@ -112,14 +112,14 @@ export default function RegistrationQuestionnaire({
         return (
           <div className="space-y-6">
             <div className="w-24 h-24 mx-auto rounded-lg bg-primary/20 backdrop-blur flex items-center justify-center mb-6">
-              <img src="/img1.jpg" alt="Field of Study" className="w-16 h-16 object-cover rounded" />
+              <img src="/img1.png" alt="Field of Study" className="w-16 h-16 object-cover rounded" />
             </div>
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">What's your field of study?</h2>
               <Select 
                 value={profileData.fieldOfStudy} 
                 onValueChange={(value) => {
-                  console.log("onValueChange triggered with:", value)
+                  // console.log("onValueChange triggered with:", value)
                     updateProfileData('fieldOfStudy', value)}}
               >
                 <SelectTrigger className="w-full bg-background/50 backdrop-blur border-border/50">
@@ -139,7 +139,7 @@ export default function RegistrationQuestionnaire({
         return (
           <div className="space-y-6">
             <div className="w-24 h-24 mx-auto rounded-lg bg-primary/20 backdrop-blur flex items-center justify-center mb-6">
-              <img src="/img2.jpg" alt="Study Level" className="w-16 h-16 object-cover rounded" />
+              <img src="/img2.png" alt="Study Level" className="w-16 h-16 object-cover rounded" />
             </div>
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">What is your intended level of study?</h2>
@@ -169,7 +169,7 @@ export default function RegistrationQuestionnaire({
         return (
           <div className="space-y-6">
             <div className="w-24 h-24 mx-auto rounded-lg bg-primary/20 backdrop-blur flex items-center justify-center mb-6">
-              <img src="/img3.jpg" alt="Nationality" className="w-16 h-16 object-cover rounded" />
+              <img src="/img3.png" alt="Nationality" className="w-16 h-16 object-cover rounded" />
             </div>
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">What's your nationality?</h2>
@@ -194,7 +194,7 @@ export default function RegistrationQuestionnaire({
         return (
           <div className="space-y-6">
             <div className="w-24 h-24 mx-auto rounded-lg bg-primary/20 backdrop-blur flex items-center justify-center mb-6">
-              <img src="/img4.jpg" alt="English Proficiency" className="w-16 h-16 object-cover rounded" />
+              <img src="/img4.png" alt="English Proficiency" className="w-16 h-16 object-cover rounded" />
             </div>
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">English Proficiency</h2>
@@ -359,7 +359,7 @@ export default function RegistrationQuestionnaire({
         return (
           <div className="space-y-6">
             <div className="w-24 h-24 mx-auto rounded-lg bg-primary/20 backdrop-blur flex items-center justify-center mb-6">
-              <img src="/img7.jpg" alt="Start Date" className="w-16 h-16 object-cover rounded" />
+              <img src="/img7.png" alt="Start Date" className="w-16 h-16 object-cover rounded" />
             </div>
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">When do you want to start your studies?</h2>
@@ -378,7 +378,7 @@ export default function RegistrationQuestionnaire({
         return (
           <div className="space-y-6">
             <div className="w-24 h-24 mx-auto rounded-lg bg-primary/20 backdrop-blur flex items-center justify-center mb-6">
-              <img src="/img8.jpg" alt="Education Level" className="w-16 h-16 object-cover rounded" />
+              <img src="/img8.png" alt="Education Level" className="w-16 h-16 object-cover rounded" />
             </div>
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">Highest Level of Education</h2>

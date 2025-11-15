@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (savedProfile) setProfile(JSON.parse(savedProfile));
       if (savedToken) setAuthToken(savedToken);
     } catch (error) {
-      console.error("Error loading session:", error);
+       console.error("Error loading session:", error);
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(user);
         setAuthToken(authToken);
       } catch (error) {
-        console.error("Sign in error:", error);
+         console.error("Sign in error:", error);
       } finally {
         setIsLoading(false);
         setTimeout(() => resolve(), 50);
@@ -123,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newUser);
         setAuthToken(signUpRequest.authToken);
       } catch (error) {
-        console.error("Sign up error:", error);
+         console.error("Sign up error:", error);
       } finally {
         setIsLoading(false);
         setTimeout(() => resolve(), 50);
@@ -169,7 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(`profile_${user.id}`, JSON.stringify(updatedProfile));
       localStorage.setItem("user", JSON.stringify(updatedUser));
     } catch (error) {
-      console.error("Profile update error:", error);
+       console.error("Profile update error:", error);
     }
   };
 

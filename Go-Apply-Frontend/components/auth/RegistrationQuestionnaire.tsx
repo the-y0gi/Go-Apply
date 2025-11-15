@@ -169,7 +169,7 @@ export default function RegistrationQuestionnaire({
         return (
           <div className="space-y-6">
             <div className="w-24 h-24 mx-auto rounded-lg bg-primary/20 backdrop-blur flex items-center justify-center mb-6">
-              <img src="/img3.png" alt="Nationality" className="w-16 h-16 object-cover rounded" />
+              <img src="/images3.png" alt="Nationality" className="w-16 h-16 object-cover rounded" />
             </div>
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">What's your nationality?</h2>
@@ -194,7 +194,7 @@ export default function RegistrationQuestionnaire({
         return (
           <div className="space-y-6">
             <div className="w-24 h-24 mx-auto rounded-lg bg-primary/20 backdrop-blur flex items-center justify-center mb-6">
-              <img src="/img4.png" alt="English Proficiency" className="w-16 h-16 object-cover rounded" />
+              <img src="/images4.png" alt="English Proficiency" className="w-16 h-16 object-cover rounded" />
             </div>
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">English Proficiency</h2>
@@ -323,7 +323,7 @@ export default function RegistrationQuestionnaire({
             <div className={`w-24 h-24 mx-auto rounded-lg bg-primary/20 backdrop-blur flex items-center justify-center mb-6 relative ${
               profileData.visaRefusalHistory?.hasBeenRefused === false ? 'opacity-50' : ''
             }`}>
-              <img src="/img6.jpg" alt="Visa History" className="w-16 h-16 object-cover rounded" />
+              <img src="/images6.png" alt="Visa History" className="w-16 h-16 object-cover rounded" />
               {profileData.visaRefusalHistory?.hasBeenRefused === false && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
                   <span className="text-white text-xs font-semibold px-2 py-1 bg-primary rounded">Great!</span>
@@ -378,7 +378,7 @@ export default function RegistrationQuestionnaire({
         return (
           <div className="space-y-6">
             <div className="w-24 h-24 mx-auto rounded-lg bg-primary/20 backdrop-blur flex items-center justify-center mb-6">
-              <img src="/img8.png" alt="Education Level" className="w-16 h-16 object-cover rounded" />
+              <img src="/images8.png" alt="Education Level" className="w-16 h-16 object-cover rounded" />
             </div>
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">Highest Level of Education</h2>

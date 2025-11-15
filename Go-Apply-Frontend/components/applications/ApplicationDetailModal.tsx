@@ -59,7 +59,6 @@ export default function ApplicationDetailModal({
           typeof application.programId === "object"
             ? application.programId._id
             : application.programId;
-
         const [programRes, docRes] = await Promise.all([
           axios.get(`${API_URL}/applications/program/${programId}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -231,7 +230,19 @@ export default function ApplicationDetailModal({
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
-                <p>Intakes: {program?.intake?.join(", ") || "N/A"}</p>
+                {/* <p>Intakes: {program?.intake?.join(", ") || "N/A"}</p> */}
+<p className="flex items-center gap-2">
+  <strong>Selected Intake:</strong>
+
+  <span className="font-medium text-primary">
+    {application?.intake && application.intake.length > 0
+      ? `${application.intake[0].season.charAt(0).toUpperCase() + 
+          application.intake[0].season.slice(1)} ${application.intake[0].year}`
+      : "Not Selected"}
+  </span>
+</p>
+
+
               </div>
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-muted-foreground" />

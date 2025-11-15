@@ -46,16 +46,13 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import axios from "axios";
 import { Program, University } from "@/models/program";
 import { set } from "date-fns";
-// import toast from "react-hot-toast";
 
-// fallback notifier if react-hot-toast is not installed
-// keeps existing `toast.success(...)` / `toast.error(...)` calls working
 const toast = {
   success: (msg: string) => {
     try {
       window.alert(msg);
     } catch {
-      // console.log("SUCCESS:", msg);
+      console.error("error", msg);
     }
   },
   error: (msg: string) => {
@@ -68,7 +65,7 @@ const toast = {
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-// Programs loaded from backend
+
 const usePrograms = () => {
   const [programs, setPrograms] = useState<University[]>([]);
   const [loadingPrograms, setLoadingPrograms] = useState(true);
@@ -80,7 +77,6 @@ const usePrograms = () => {
     const fetchPrograms = async () => {
       try {
         setLoadingPrograms(true);
-        // call backend; you can pass query params here if needed
         const res = await axios.get<{
           success: boolean;
           data: { programs: Program[] };
@@ -89,36 +85,6 @@ const usePrograms = () => {
         if (!mounted) return;
 
         const backendPrograms = res.data?.data?.programs || [];
-
-        // map backend Program -> frontend University-like shape used in the UI
-        // const mapped: University[] = backendPrograms.map((p) => {
-        //   const uni = p.universityId || {};
-        //   const tuitionAmount = p.tuitionFee?.amount ?? 0;
-        //   const currency = p.tuitionFee?.currency ?? "AUD";
-        //   return {
-        //     id: (p._id ?? "").toString(),
-        //     // universityId: uni._id ?? "", // <-- added
-        //     universityId: (p.universityId?._id || p.universityId || "").toString().trim(),
-
-        //     university: uni.name ?? "Unknown University",
-        //     program: p.name ?? "",
-        //     city: uni.city ?? "",
-        //     state: uni.country ?? "",
-        //     duration: p.duration ?? "",
-        //     tuition: tuitionAmount
-        //       ? `${currency} ${tuitionAmount.toLocaleString()}`
-        //       : "N/A",
-        //     ranking: uni.ranking?.global
-        //       ? `#${uni.ranking.global}`
-        //       : p.ranking ?? "",
-        //     rating: (p.rating ?? 4.5).toString(),
-        //     deadline: p.applicationDeadline ?? "",
-        //     requirements: p.requirements ?? [],
-        //     tags: p.tags ?? [],
-        //   } as University;
-        // });
-
-        // Line ~75: Update mapping to use available data
         const mapped: University[] = backendPrograms.map((p) => {
           const uni = p.universityId || {};
           const tuitionAmount = p.tuitionFee?.amount ?? 0;
@@ -144,9 +110,11 @@ const usePrograms = () => {
             deadline: p.applicationDeadline ?? "",
             requirements: p.requirements ?? [],
             tags: p.tags || [],
+            intake: p.intake || [],
           } as University;
         });
         setPrograms(mapped);
+
         setProgramsError(null);
       } catch (err: any) {
         console.error("Failed to load programs", err);
@@ -166,10 +134,13 @@ const usePrograms = () => {
 
   return { programs, loadingPrograms, programsError };
 };
-//use UserApplication Hook to get applied programs
+
 const useUserApplications = (token: string | null) => {
   const [appliedIds, setAppliedIds] = useState<string[]>([]);
   const [loadingApps, setLoadingApps] = useState(true);
+  const [appliedIntakes, setAppliedIntakes] = useState<{
+    [programId: string]: string[];
+  }>({});
 
   useEffect(() => {
     if (!token) return;
@@ -190,10 +161,40 @@ const useUserApplications = (token: string | null) => {
           })
           .filter(Boolean);
 
-        // console.log("✅ Extracted program IDs:", ids)
+        const intakeMap: { [key: string]: string[] } = {};
+
+        (res.data?.data?.applications || []).forEach((app: any) => {
+          let programId: string | undefined;
+
+          if (!app.programId) return;
+          if (typeof app.programId === "object" && app.programId._id) {
+            programId = String(app.programId._id);
+          } else {
+            programId = String(app.programId);
+          }
+
+          if (!programId) return;
+
+          if (Array.isArray(app.intake) && app.intake.length > 0) {
+            const applied = app.intake
+              .filter((i: any) => i && i.season && i.year)
+              .map((i: any) => `${i.season}-${i.year}`);
+
+            if (!intakeMap[programId]) intakeMap[programId] = [];
+            applied.forEach((val: string) => {
+              if (!intakeMap[programId].includes(val))
+                intakeMap[programId].push(val);
+            });
+          }
+        });
+
+        setAppliedIntakes(intakeMap);
+
+        setAppliedIntakes(intakeMap);
+
         setAppliedIds(ids);
       } catch (err) {
-        //  console.error("❌ Failed to fetch user applications:", err.?res.data?.data?.applications || err?.message || err)
+        console.error("Failed to load user applications", err);
       } finally {
         setLoadingApps(false);
       }
@@ -202,7 +203,13 @@ const useUserApplications = (token: string | null) => {
     fetchApplications();
   }, [token]);
 
-  return { appliedIds, loadingApps, setAppliedIds };
+  return {
+    appliedIds,
+    loadingApps,
+    setAppliedIds,
+    appliedIntakes,
+    setAppliedIntakes,
+  };
 };
 
 export default function SearchPage() {
@@ -210,6 +217,16 @@ export default function SearchPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [token, setToken] = useState<string | null>(null);
+  const [selectedIntakesForPrograms, setSelectedIntakesForPrograms] = useState<
+    Record<string, string>
+  >({});
+  const {
+    appliedIds,
+    loadingApps,
+    setAppliedIds,
+    appliedIntakes,
+    setAppliedIntakes,
+  } = useUserApplications(token);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -221,14 +238,10 @@ export default function SearchPage() {
     }
   }, []);
 
-  const { appliedIds, loadingApps, setAppliedIds } = useUserApplications(token);
-
-  // store applied program ids as strings (backend _id)
   const [appliedPrograms, setAppliedPrograms] = useState<string[]>([]);
- 
+
   const [showAppliedButton, setShowAppliedButton] = useState(false);
 
-  // update floating button visibility when appliedPrograms change
   useEffect(() => {
     setShowAppliedButton(appliedPrograms.length > 0);
   }, [appliedPrograms]);
@@ -237,7 +250,7 @@ export default function SearchPage() {
     setShowAppliedButton(false);
   }, []);
 
-  const [applyingIds, setApplyingIds] = useState<string[]>([]); // in-flight applies
+  const [applyingIds, setApplyingIds] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState("");
   const [selectedField, setSelectedField] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
@@ -245,6 +258,11 @@ export default function SearchPage() {
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [minRating, setMinRating] = useState(4.0);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [selectedProgram, setSelectedProgram] = useState<University | null>(
+    null
+  );
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedIntake, setSelectedIntake] = useState<string>("");
 
   const {
     programs: allPrograms,
@@ -252,10 +270,8 @@ export default function SearchPage() {
     programsError,
   } = usePrograms();
 
-  // Ensure we always have an array to filter (protects against undefined)
   const programsList = Array.isArray(allPrograms) ? allPrograms : [];
 
-  // Filter programs based on search criteria
   const filteredPrograms = programsList.filter((program) => {
     const matchesSearch =
       searchQuery === "" ||
@@ -274,21 +290,18 @@ export default function SearchPage() {
       selectedLevel === "" ||
       program.program.toLowerCase().includes(selectedLevel.replace("s", ""));
 
-    // Robust tuition parsing: strip all non-digit/period characters
     const tuitionValue =
       Number(String(program.tuition).replace(/[^\d.]/g, "")) || 0;
     const matchesTuition =
       tuitionValue >= (tuitionRange[0] || 0) &&
       tuitionValue <= (tuitionRange[1] || Infinity);
 
-    // Normalize rating to number
     const ratingValue =
       typeof program.rating === "number"
         ? program.rating
         : parseFloat(String(program.rating)) || 0;
     const matchesRating = ratingValue >= (minRating || 0);
 
-    // Feature matching (boolean)
     const matchesFeatures =
       selectedFeatures.length === 0 ||
       selectedFeatures.some((feature) =>
@@ -307,9 +320,12 @@ export default function SearchPage() {
       matchesFeatures
     );
   });
-  const visiblePrograms = filteredPrograms.filter(
-    (program) => !appliedIds.includes(program.id.toString())
-  );
+  const visiblePrograms = programsList.filter((program) => {
+    const intakeKeys =
+      program.intake?.map((i) => `${i.season}-${i.year}`) || [];
+    const applied = appliedIntakes[program.id] || [];
+    return applied.length < intakeKeys.length;
+  });
 
   const handleFeatureToggle = (feature: string) => {
     setSelectedFeatures((prev) =>
@@ -319,130 +335,177 @@ export default function SearchPage() {
     );
   };
 
-  
-const checkProfileCompleteness = (profile: any): { isComplete: boolean; missingFields: string[] } => {
-  const missingFields: string[] = [];
+  const checkProfileCompleteness = (
+    profile: any
+  ): { isComplete: boolean; missingFields: string[] } => {
+    const missingFields: string[] = [];
 
-  if (!profile.educationHistory || profile.educationHistory.length === 0) {
-    missingFields.push("Education History");
-  }
+    if (!profile.educationHistory || profile.educationHistory.length === 0) {
+      missingFields.push("Education History");
+    }
 
-  if (!profile.languages || profile.languages.length === 0) {
-    missingFields.push("Languages");
-  }
+    if (!profile.languages || profile.languages.length === 0) {
+      missingFields.push("Languages");
+    }
 
-  if (!profile.nationality) {
-    missingFields.push("Nationality");
-  }
+    if (!profile.nationality) {
+      missingFields.push("Nationality");
+    }
 
-  if (!profile.dateOfBirth) {
-    missingFields.push("Date of Birth");
-  }
+    if (!profile.dateOfBirth) {
+      missingFields.push("Date of Birth");
+    }
 
-  return {
-    isComplete: missingFields.length === 0,
-    missingFields
+    return {
+      isComplete: missingFields.length === 0,
+      missingFields,
+    };
   };
-};
+  const handleDetails = (program: University) => {
+    if (!program) return;
+    setSelectedProgram(program);
+    setShowDetailsModal(true);
+  };
+  const handleApplyNow = async (program: University) => {
+    if (!program?.id) return;
 
-const handleApplyNow = async (program: University) => {
-  if (!program?.id) return;
+    if (
+      appliedPrograms.includes(program.id) ||
+      applyingIds.includes(program.id)
+    )
+      return;
 
-  // prevent duplicate/apply-in-flight
-  if (
-    appliedPrograms.includes(program.id) ||
-    applyingIds.includes(program.id)
-  )
-    return;
-
-  const rawToken = localStorage.getItem("authToken") || "";
-  const token = rawToken.replace(/^"|"$/g, "").trim();
-  if (!token) {
-    toast.error("Not signed in. Please login.");
-    router.push("/auth/login");
-    return;
-  }
-
-    // Check profile completeness with specific fields
-  try {
-    const profileRes = await axios.get(`${API_URL}/users/profile`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    const userProfile = profileRes.data?.data?.profile;
-    
-    const { isComplete, missingFields } = checkProfileCompleteness(userProfile);
-    
-    if (!isComplete) {
-      // SPECIFIC ERROR MESSAGE
-      toast.error(`Please complete your profile: ${missingFields.join(", ")}`);
-      router.push("/dashboard/profile");
+    const rawToken = localStorage.getItem("authToken") || "";
+    const token = rawToken.replace(/^"|"$/g, "").trim();
+    if (!token) {
+      toast.error("Not signed in. Please login.");
+      router.push("/auth/login");
       return;
     }
-  } catch (err) {
-    console.error("Profile check failed:", err);
-    toast.error("Unable to verify profile. Please try again.");
-    return;
-  }
 
-  try {
-    // mark as applying
-    setApplyingIds((prev) => [...prev, program.id]);
-
-    const payload = {
-      universityId: program.universityId,
-      programId: program.id,
-      personalStatement: "",
-    };
-
-    const res = await axios.post(`${API_URL}/applications`, payload, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (res?.data?.success) {
-      setAppliedPrograms((prev) => {
-        const next = [...prev, program.id];
-        try {
-          localStorage.setItem("appliedPrograms", JSON.stringify(next));
-        } catch {}
-        return next;
+    try {
+      const profileRes = await axios.get(`${API_URL}/users/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
+
+      const userProfile = profileRes.data?.data?.profile;
+
+      const { isComplete, missingFields } =
+        checkProfileCompleteness(userProfile);
+
+      if (!isComplete) {
+        toast.error(
+          `Please complete your profile: ${missingFields.join(", ")}`
+        );
+        router.push("/dashboard/profile");
+        return;
+      }
+    } catch (err) {
+      console.error("Profile check failed:", err);
+      toast.error("Unable to verify profile. Please try again.");
+      return;
+    }
+
+    try {
+      setApplyingIds((prev) => [...prev, program.id]);
+
+      const intakeValue = selectedIntakesForPrograms[program.id];
+      if (!intakeValue) {
+        toast.error("Please select an intake before applying!");
+        return;
+      }
+      const [season, yearString] = intakeValue.split("-");
+      const selectedIntakeObj = {
+        season,
+        year: Number(yearString),
+      };
+
+      const payload = {
+        universityId: program.universityId,
+        programId: program.id,
+        intake: selectedIntakeObj,
+        personalStatement: "",
+      };
+
+      const res = await axios.post(`${API_URL}/applications`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("[handleApplyNow] server response:", res?.data);
+
+      if (res?.data?.success) {
+        setAppliedIntakes((prev) => {
+          const intakeCode = `${season}-${yearString}`;
+
+          const next = {
+            ...prev,
+            [program.id]: [...(prev[program.id] || []), intakeCode].filter(
+              (v, i, a) => a.indexOf(v) === i
+            ),
+          };
+          return next;
+        });
+
+        setAppliedPrograms((prev) => {
+          const next = [...prev, program.id];
+          try {
+            localStorage.setItem("appliedPrograms", JSON.stringify(next));
+          } catch {}
+          return next;
+        });
+
+        setSelectedIntakesForPrograms((prev) => ({
+          ...prev,
+          [program.id]: "",
+        }));
+
+        setShowAppliedButton(true);
+
+        toast.success(
+          "Application created — open Applied Programs to view it."
+        );
+      } else {
+        toast.error(res?.data?.message || "Failed to create application");
+      }
+
+      setShowAppliedButton(true);
       setShowAppliedButton(true);
       toast.success("Application created — open Applied Programs to view it.");
-    } else {
-      toast.error(res?.data?.message || "Failed to create application");
-    }
-  } catch (err: any) {
-    console.error("Create application failed:", err?.response?.data ?? err?.message);
-    
-    if (err?.response?.data?.message?.includes("complete your profile")) {
-      toast.error("Please complete your profile before applying");
-      router.push("/dashboard/profile");
-      return;
-    }
-    if (err?.response?.status === 401) {
-      toast.error("Session expired. Please login again.");
-      router.push("/auth/login");
-    } else {
-      toast.error(err?.response?.data?.message ?? "Failed to create application");
-    }
-  } finally {
-    setApplyingIds((prev) => prev.filter((id) => id !== program.id));
-  }
-};
+    } catch (err: any) {
+      console.error(
+        "Create application failed:",
+        err?.response?.data ?? err?.message
+      );
 
-// ✅ ADD THIS HELPER FUNCTION (file ke bahar ya andar)
-const isProfileComplete = (profile: any): boolean => {
-  const hasEducation = profile.educationHistory && profile.educationHistory.length > 0;
-  const hasLanguages = profile.languages && profile.languages.length > 0;
-  const hasBasicInfo = profile.nationality && profile.dateOfBirth;
-  
-  return hasEducation && hasLanguages && hasBasicInfo;
-};
-// Normalize requirements coming from backend (array, object or string)
+      if (err?.response?.data?.message?.includes("complete your profile")) {
+        toast.error("Please complete your profile before applying");
+        router.push("/dashboard/profile");
+        return;
+      }
+      if (err?.response?.status === 401) {
+        toast.error("Session expired. Please login again.");
+        router.push("/auth/login");
+      } else {
+        toast.error(
+          err?.response?.data?.message ?? "Failed to create application"
+        );
+      }
+    } finally {
+      setApplyingIds((prev) => prev.filter((id) => id !== program.id));
+    }
+  };
+
+  const isProfileComplete = (profile: any): boolean => {
+    const hasEducation =
+      profile.educationHistory && profile.educationHistory.length > 0;
+    const hasLanguages = profile.languages && profile.languages.length > 0;
+    const hasBasicInfo = profile.nationality && profile.dateOfBirth;
+
+    return hasEducation && hasLanguages && hasBasicInfo;
+  };
+
   const normalizeRequirements = (requirements: any): string[] => {
     if (!requirements) return [];
     if (Array.isArray(requirements)) return requirements.filter(Boolean);
@@ -489,6 +552,82 @@ const isProfileComplete = (profile: any): boolean => {
 
         <div className="flex-1 flex flex-col overflow-hidden">
           <DashboardHeader />
+          <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>
+                  {selectedProgram?.program || "Program Details"}
+                </DialogTitle>
+                <DialogDescription>
+                  Select intake (season + year)
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 mt-4">
+                {/* Intake Dropdown */}
+                <div>
+                  <Label>Choose Intake</Label>
+                  <Select
+                    value={selectedIntake}
+                    onValueChange={setSelectedIntake}
+                  >
+                    <SelectTrigger className="w-full mt-1">
+                      <SelectValue placeholder="Select intake" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {selectedProgram?.intake
+                        ?.filter((i: any) => {
+                          const programKey = selectedProgram.id;
+                          const applied = appliedIntakes[programKey] || [];
+                          const value = `${i.season}-${i.year}`;
+
+                          return !applied.includes(value);
+                        })
+                        .map((i: any, idx: number) => {
+                          const label = `${
+                            i.season.charAt(0).toUpperCase() + i.season.slice(1)
+                          } ${i.year}`;
+                          const value = `${i.season}-${i.year}`;
+                          return (
+                            <SelectItem key={idx} value={value}>
+                              {label}
+                            </SelectItem>
+                          );
+                        })}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex justify-end">
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowDetailsModal(false)}
+                    >
+                      Cancel
+                    </Button>
+
+                    <Button
+                      onClick={() => {
+                        if (!selectedProgram || !selectedIntake) return;
+
+                        setSelectedIntakesForPrograms((prev) => ({
+                          ...prev,
+                          [selectedProgram.id]: selectedIntake,
+                        }));
+
+                        setShowDetailsModal(false);
+                      }}
+                    >
+                      OK
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           <main className="flex-1 overflow-y-auto p-6">
             <div className="space-y-6">
               {/* Header */}
@@ -868,19 +1007,40 @@ const isProfileComplete = (profile: any): boolean => {
                                     ))}
                                   </div>
                                 </div>
+                                {selectedIntakesForPrograms[program.id] && (
+                                  <p className="text-sm text-primary font-medium mt-2">
+                                    Selected Intake:{" "}
+                                    {selectedIntakesForPrograms[program.id]
+                                      .replace("-", " ")
+                                      .replace(/\b\w/g, (c) => c.toUpperCase())}
+                                  </p>
+                                )}
 
                                 {/* Action buttons */}
                                 <div className="flex items-center justify-between pt-2">
                                   <p className="text-sm text-muted-foreground">
                                     Application deadline:{" "}
                                     <span className="font-medium text-foreground">
-                                      {program.deadline}
+                                      {program.deadline
+                                        ? new Date(
+                                            program.deadline
+                                          ).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "short",
+                                            day: "numeric",
+                                          })
+                                        : "N/A"}
                                     </span>
                                   </p>
                                   <div className="flex gap-2">
-                                    <Button variant="outline" size="sm">
-                                      Learn More
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleDetails(program)}
+                                    >
+                                      Details
                                     </Button>
+
                                     <Button
                                       size="sm"
                                       onClick={() => handleApplyNow(program)}

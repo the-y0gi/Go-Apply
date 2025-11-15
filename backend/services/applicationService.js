@@ -7,22 +7,30 @@ const UserProfile = require("../models/UserProfile")
 
 
 exports.createNewApplication = async (userId, data) => {
-  const { universityId, programId, personalStatement, recommendationLetters } = data;
+  const { universityId, programId,intake, personalStatement, recommendationLetters } = data;
 
   const university = await University.findById(universityId);
   const program = await Program.findById(programId);
 
   //UserProfile check for actual data
   const userProfile = await UserProfile.findOne({ userId });
+
   if (!userProfile || !isProfileComplete(userProfile)) {
     throw new Error("Please complete your profile with education history, experience, and languages before applying to programs");
   }
 
   if (!university || !program) throw new Error("University or program not found");
 
-  const existing = await Application.findOne({ userId, universityId, programId });
-  if (existing) throw new Error("Application already exists for this program");
-
+   if (intake && intake.season && intake.year) {
+    const existing = await Application.findOne({
+      userId,
+      universityId,
+      programId,
+      "intake.season": intake.season,
+      "intake.year": intake.year,
+    });
+  if (existing) throw new Error(`You already applied for the ${intake.season} ${intake.year} intake`);
+  }
   // Initial progress object
   const initialProgress = {
     personalInfo: true,
@@ -40,6 +48,7 @@ exports.createNewApplication = async (userId, data) => {
     deadline: program.applicationDeadline,
     applicationFee: program.applicationFee || 100,
     progress: initialProgress,
+    intake: intake ? [intake] : [],
   });
 
   await application.save();

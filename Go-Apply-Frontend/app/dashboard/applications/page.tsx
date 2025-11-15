@@ -205,27 +205,31 @@ export default function ApplicationsPage() {
                 <StatCard
                   title="Under Review"
                   value={
-                    applications.filter((a) => a.status === "Under Review")
-                      .length
+                    applications.filter(
+                      (a) => a.status.toLowerCase() === "under review"
+                    ).length
                   }
                   icon={<Clock className="h-8 w-8 text-yellow-600" />}
                 />
                 <StatCard
                   title="Accepted"
                   value={
-                    applications.filter((a) => a.status === "Accepted").length
+                    applications.filter(
+                      (a) => a.status.toLowerCase() === "accepted"
+                    ).length
                   }
                   icon={<CheckCircle className="h-8 w-8 text-green-600" />}
                 />
                 <StatCard
                   title="Draft"
                   value={
-                    applications.filter((a) => a.status === "Draft").length
+                    applications.filter(
+                      (a) => a.status.toLowerCase() === "draft"
+                    ).length
                   }
                   icon={<AlertCircle className="h-8 w-8 text-gray-600" />}
                 />
               </motion.div>
-
               {/* Applications */}
               <Card className="bg-card/50 backdrop-blur border-border/50">
                 <CardHeader>
@@ -429,28 +433,6 @@ export default function ApplicationsPage() {
                               )}
 
                               {/* PAYMENT BUTTON */}
-                              {/* {app.progress?.payment ? (
-                                <Badge className="bg-green-100 text-green-800">
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                  Paid
-                                </Badge>
-                              ) : app.progress?.documents ? (
-                                <Button
-                                  size="sm"
-                                  className="bg-green-700 hover:bg-green-800 text-white"
-                                  onClick={() => handlePayment(app._id)}
-                                >
-                                  Payment
-                                </Button>
-                              ) : (
-                                <Badge
-                                  variant="outline"
-                                  className="text-gray-500"
-                                >
-                                  Complete Documents
-                                </Badge>
-                              )} */}
-                              {/* PAYMENT BUTTON */}
                               {app.progress?.payment ? (
                                 <Badge className="bg-green-100 text-green-800">
                                   <CheckCircle className="w-3 h-3 mr-1" />
@@ -471,7 +453,7 @@ export default function ApplicationsPage() {
                                   variant="outline"
                                   className="text-gray-500"
                                 >
-                                  Complete All Steps
+                                  Click View to Complete All Steps
                                 </Badge>
                               )}
                             </div>

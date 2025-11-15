@@ -52,7 +52,6 @@ import axios from "axios";
 // API Base URL
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
-
 export default function ProfilePage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("personal");
@@ -345,12 +344,8 @@ export default function ProfilePage() {
       const newLanguages = [...profileData.languages, lang];
       setProfileData((prev) => ({ ...prev, languages: newLanguages }));
 
-      // Update backend
-      // const token = localStorage.getItem('token')
-      // const token =
-      //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTBiNTgwNjgwY2Q5OTBlMjQ4MGM4YTIiLCJpYXQiOjE3NjIzNjE2ODYsImV4cCI6MTc2NDk1MzY4Nn0.V9yJwOZOSwtVKl2n1gEzKMbIXQSUBrdC77Qebs9xqEA";
-              const rawToken = localStorage.getItem("authToken") || ""
-        const token = rawToken.replace(/^"|"$/g, "").trim()
+      const rawToken = localStorage.getItem("authToken") || "";
+      const token = rawToken.replace(/^"|"$/g, "").trim();
       await axios.put(
         `${API_URL}/users/profile`,
         { languages: newLanguages },
@@ -391,12 +386,8 @@ export default function ProfilePage() {
         languages: updatedLanguages,
       });
 
-      // Update backend
-      // const token = localStorage.getItem('token')
-      // const token =
-      //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTBiNTgwNjgwY2Q5OTBlMjQ4MGM4YTIiLCJpYXQiOjE3NjIzNjE2ODYsImV4cCI6MTc2NDk1MzY4Nn0.V9yJwOZOSwtVKl2n1gEzKMbIXQSUBrdC77Qebs9xqEA";
-              const rawToken = localStorage.getItem("authToken") || ""
-        const token = rawToken.replace(/^"|"$/g, "").trim()
+      const rawToken = localStorage.getItem("authToken") || "";
+      const token = rawToken.replace(/^"|"$/g, "").trim();
       await axios.put(
         `${API_URL}/users/profile`,
         { languages: updatedLanguages },
@@ -422,13 +413,8 @@ export default function ProfilePage() {
     try {
       const newAchievements = [...profileData.achievements, ach];
       setProfileData((prev) => ({ ...prev, achievements: newAchievements }));
-
-      // Update backend
-      // const token = localStorage.getItem('token')
-      // const token =
-      //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTBiNTgwNjgwY2Q5OTBlMjQ4MGM4YTIiLCJpYXQiOjE3NjIzNjE2ODYsImV4cCI6MTc2NDk1MzY4Nn0.V9yJwOZOSwtVKl2n1gEzKMbIXQSUBrdC77Qebs9xqEA";
-              const rawToken = localStorage.getItem("authToken") || ""
-        const token = rawToken.replace(/^"|"$/g, "").trim()
+      const rawToken = localStorage.getItem("authToken") || "";
+      const token = rawToken.replace(/^"|"$/g, "").trim();
       await axios.put(
         `${API_URL}/users/profile`,
         { achievements: newAchievements },
@@ -458,7 +444,6 @@ export default function ProfilePage() {
       setLoading(true);
       setError("");
 
-      //  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTBiNTgwNjgwY2Q5OTBlMjQ4MGM4YTIiLCJpYXQiOjE3NjIzNjE2ODYsImV4cCI6MTc2NDk1MzY4Nn0.V9yJwOZOSwtVKl2n1gEzKMbIXQSUBrdC77Qebs9xqEA"
       const rawToken = localStorage.getItem("authToken") || "";
       const token = rawToken.replace(/^"|"$/g, "").trim();
       // Update profile through backend API
@@ -483,7 +468,6 @@ export default function ProfilePage() {
       );
 
       if (response.data.success) {
-        // Update original data to current data after successful save
         setOriginalData({ ...profileData });
         setIsEditing(false);
         setSuccessMessage("Profile updated successfully");
@@ -1069,7 +1053,7 @@ export default function ProfilePage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="w-full bg-background/50 backdrop-blur border-border/50"
+                              className="bg-background/50 backdrop-blur border-border/50"
                               onClick={() => setIsAddingLanguage(true)}
                             >
                               Add Language

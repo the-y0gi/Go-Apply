@@ -39,6 +39,7 @@ import {
   GraduationCap,
   Clock,
   DollarSign,
+  LoaderCircle,
 } from "lucide-react";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
@@ -47,7 +48,6 @@ import axios from "axios";
 import { Program, University } from "@/models/program";
 import { set } from "date-fns";
 import toast, { Toaster } from "react-hot-toast";
-
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -307,12 +307,12 @@ export default function SearchPage() {
   });
 
   const visiblePrograms = filteredPrograms.filter((program) => {
-  const intakeKeys = program.intake?.map((i) => `${i.season}-${i.year}`) || [];
-  const applied = appliedIntakes[program.id] || [];
+    const intakeKeys =
+      program.intake?.map((i) => `${i.season}-${i.year}`) || [];
+    const applied = appliedIntakes[program.id] || [];
 
-  return applied.length < intakeKeys.length;
-});
-
+    return applied.length < intakeKeys.length;
+  });
 
   const handleFeatureToggle = (feature: string) => {
     setSelectedFeatures((prev) =>
@@ -384,9 +384,9 @@ export default function SearchPage() {
         toast.error(
           `Please complete your profile: ${missingFields.join(", ")}`
         );
-       setTimeout(() => {
-    router.push("/dashboard/profile");
-  }, 2000);
+        setTimeout(() => {
+          router.push("/dashboard/profile");
+        }, 2000);
         return;
       }
     } catch (err) {
@@ -461,7 +461,7 @@ export default function SearchPage() {
       setShowAppliedButton(true);
       // toast.success("Application created — open Applied Programs to view it.");
     } catch (err: any) {
-       console.error(
+      console.error(
         "Create application failed:",
         err?.response?.data ?? err?.message
       );
@@ -470,8 +470,8 @@ export default function SearchPage() {
         toast.error("Please complete your profile before applying");
         setTimeout(() => {
           router.push("/dashboard/profile");
-        },1500)
-        
+        }, 1500);
+
         return;
       }
       if (err?.response?.status === 401) {
@@ -527,8 +527,11 @@ export default function SearchPage() {
   };
   if (loadingPrograms || loadingApps) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-muted-foreground text-lg">Loading programs...</p>
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <LoaderCircle className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading your dashboard...</p>
+        </div>
       </div>
     );
   }

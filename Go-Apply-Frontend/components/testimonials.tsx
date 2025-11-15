@@ -43,7 +43,7 @@ const reviews = [
     name: "Sarah Chen",
     username: "@sarahc_student",
     body: "GoApply made my dream of studying at Oxford a reality. The application tracking and guidance were exceptional!",
-    img: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=64&h=64&fit=crop&crop=face",
+    img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face",
   },
   {
     name: "Miguel Rodriguez",

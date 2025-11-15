@@ -79,7 +79,7 @@ export default function StudyDestinationsPage() {
             {[
               {
                 name: "Melbourne",
-                img: "https://images.pexels.com/photos/3082431/pexels-photo-3082431.jpeg",
+                img: "https://images.pexels.com/photos/34090461/pexels-photo-34090461.jpeg",
               },
               {
                 name: "Sydney",

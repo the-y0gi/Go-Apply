@@ -19,8 +19,7 @@ const staticRoutes = require('./routes/static');
 const applicationRoutes = require('./routes/applications');
 const contactRoutes = require('./routes/contact');
 const progressRoutes = require("./routes/progress");
-
-
+const notificationRoutes = require("./routes/notification");
 const app = express();
 
 // Rate Limiting
@@ -66,6 +65,7 @@ app.use('/api/search', searchRoutes);
 app.use('/api/static', staticRoutes);
 app.use('/api/contact', contactRoutes);
 app.use("/api/progress", progressRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 
 // Global Error Handler

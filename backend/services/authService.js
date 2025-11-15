@@ -1,6 +1,7 @@
 const User = require("../models/User");
+const notificationService = require("../services/notificationService");
 const { generateToken } = require("../utils/generateToken");
-const { sendWelcomeEmail,sendOtpEmail } = require("../utils/emailService");
+const { sendWelcomeEmail, sendOtpEmail } = require("../utils/emailService");
 
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
@@ -25,6 +26,14 @@ exports.register = async ({ email, password, firstName, lastName }) => {
 
   // sendWelcomeEmail(user).catch(console.error);
 
+  // Create welcome notification
+  await notificationService.createNotification(
+    user._id,
+    "welcome",
+    "Welcome to GoApply!",
+    "Complete your profile to start your study abroad journey"
+  );
+  
   return {
     success: true,
     message: "User registered successfully",
@@ -44,14 +53,21 @@ exports.register = async ({ email, password, firstName, lastName }) => {
 
 exports.login = async ({ email, password }) => {
   const user = await User.findOne({ email }).select("+passwordHash");
-  if (!user) throw Object.assign(new Error("Invalid email or password"), { status: 401 });
+  if (!user)
+    throw Object.assign(new Error("Invalid email or password"), {
+      status: 401,
+    });
 
   if (!user.isActive)
-    throw Object.assign(new Error("Account has been deactivated"), { status: 401 });
+    throw Object.assign(new Error("Account has been deactivated"), {
+      status: 401,
+    });
 
   const isPasswordValid = await user.checkPassword(password);
   if (!isPasswordValid)
-    throw Object.assign(new Error("Invalid email or password"), { status: 401 });
+    throw Object.assign(new Error("Invalid email or password"), {
+      status: 401,
+    });
 
   const token = generateToken(user._id);
 
@@ -86,9 +102,6 @@ exports.updateProfile = async (userId, data) => {
   return updatedUser;
 };
 
-
-
-
 exports.forgotPassword = async (email) => {
   const user = await User.findOne({ email });
 
@@ -104,7 +117,7 @@ exports.forgotPassword = async (email) => {
   const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
 
   user.resetPasswordOtp = hashedOtp;
-  user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; 
+  user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
   await user.save();
 
   await sendOtpEmail(user.email, otp);
@@ -114,7 +127,6 @@ exports.forgotPassword = async (email) => {
     message: "OTP sent to registered email.",
   };
 };
-
 
 exports.verifyResetOtp = async (email, otp) => {
   const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
@@ -131,8 +143,6 @@ exports.verifyResetOtp = async (email, otp) => {
 
   return { success: true, message: "OTP verified successfully." };
 };
-
-
 
 exports.resetPassword = async (email, otp, newPassword) => {
   const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
@@ -156,7 +166,7 @@ exports.resetPassword = async (email, otp, newPassword) => {
 
   return {
     success: true,
-    message: "Password reset successfully. You can now log in with your new password.",
+    message:
+      "Password reset successfully. You can now log in with your new password.",
   };
 };
-

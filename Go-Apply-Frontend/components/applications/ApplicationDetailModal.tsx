@@ -1,4 +1,3 @@
-//working code before using gpt
 "use client";
 
 import { useEffect, useState } from "react";
@@ -40,7 +39,7 @@ export default function ApplicationDetailModal({
     missing: [],
   });
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -54,7 +53,6 @@ export default function ApplicationDetailModal({
         const token = localStorage.getItem("authToken")?.replace(/^"|"$/g, "");
         if (!token) return;
 
-        // Program ID safely get karo
         const programId =
           typeof application.programId === "object"
             ? application.programId._id
@@ -95,10 +93,13 @@ export default function ApplicationDetailModal({
     fetchData();
   }, [application]);
 
-  //Auto progress update when all docs uploaded
   useEffect(() => {
     const updateProgressIfAllDocsUploaded = async () => {
-      if (docs.missing.length === 0) {
+      const allRequiredDocsUploaded =
+        docs.required.length > 0 &&
+        docs.uploaded.length >= docs.required.length;
+
+      if (allRequiredDocsUploaded && !application.progress?.documents) {
         try {
           const token = localStorage
             .getItem("authToken")
@@ -109,6 +110,12 @@ export default function ApplicationDetailModal({
             { headers: { Authorization: `Bearer ${token}` } }
           );
           onUpdate(res.data.data.application);
+
+          toast({
+            title: "All Documents Uploaded",
+            description:
+              "All required documents have been uploaded successfully!",
+          });
         } catch (err) {
           console.error("Progress update failed:", err);
         }
@@ -116,7 +123,11 @@ export default function ApplicationDetailModal({
     };
 
     updateProgressIfAllDocsUploaded();
-  }, [docs.missing.length]);
+  }, [
+    docs.uploaded.length,
+    docs.required.length,
+    application.progress?.documents,
+  ]);
 
   // Upload missing document
   const handleUploadDocument = async (type: string) => {
@@ -133,7 +144,9 @@ export default function ApplicationDetailModal({
       formData.append("applicationId", application._id);
 
       try {
-        setUploading(true);
+        // Add this document type to uploading array
+        setUploading(prev => [...prev, type]);
+        
         const token = localStorage.getItem("authToken")?.replace(/^"|"$/g, "");
         const res = await axios.post(`${API_URL}/documents/upload`, formData, {
           headers: {
@@ -157,44 +170,16 @@ export default function ApplicationDetailModal({
         }));
       } catch (err) {
         toast({
-          title: "❌ Upload Failed",
+          title: "Upload Failed",
           description: "Please try again later.",
           variant: "destructive",
         });
       } finally {
-        setUploading(false);
+        // Remove this document type from uploading array
+        setUploading(prev => prev.filter(docType => docType !== type));
       }
     };
     input.click();
-  };
-
-  // Payment & submission
-  const handlePayment = async () => {
-    try {
-      setSubmitting(true);
-      const token = localStorage.getItem("authToken")?.replace(/^"|"$/g, "");
-      const res = await axios.post(
-        `${API_URL}/applications/${application._id}/submit`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      toast({
-        title: "Application Submitted",
-        description: "Your application was successfully submitted.",
-      });
-
-      onUpdate(res.data.data.application);
-      onClose();
-    } catch (err) {
-      toast({
-        title: "Submission Failed",
-        description: "Something went wrong while submitting your application.",
-        variant: "destructive",
-      });
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   if (loading)
@@ -282,9 +267,21 @@ export default function ApplicationDetailModal({
         {/* Required Documents */}
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-3">Required Documents</h3>
+
+          <div className="mb-4 p-3 bg-blue-50 rounded-md">
+            <p className="text-sm text-blue-700">
+              {docs.uploaded.length} of {docs.required.length} documents
+              uploaded
+              {docs.uploaded.length === docs.required.length &&
+                " — All documents Uploaded!"}
+            </p>
+          </div>
+
           <div className="space-y-2">
             {docs.required.map((type) => {
               const uploaded = docs.uploaded.some((d) => d.type === type);
+              const isUploading = uploading.includes(type);
+              
               return (
                 <div
                   key={type}
@@ -299,26 +296,15 @@ export default function ApplicationDetailModal({
                     <Button
                       size="sm"
                       onClick={() => handleUploadDocument(type)}
-                      disabled={uploading}
+                      disabled={isUploading}
                     >
-                      {uploading ? "Uploading..." : "Upload"}
+                      {isUploading ? "Uploading..." : "Upload"}
                     </Button>
                   )}
                 </div>
               );
             })}
           </div>
-
-          {/* Payment Button */}
-          {/* {allDocsUploaded && (
-            <Button
-              className="w-full mt-4 bg-primary hover:bg-primary/90"
-              onClick={handlePayment}
-              disabled={submitting}
-            >
-              {submitting ? "Processing..." : "Proceed to Payment & Submit"}
-            </Button>
-          )} */}
         </div>
       </DialogContent>
     </Dialog>

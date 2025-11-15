@@ -3,8 +3,8 @@ const University = require("../models/University");
 const Program = require("../models/Program");
 const Document = require("../models/Document");
 const User = require("../models/User");
-const UserProfile = require("../models/UserProfile")
-
+const UserProfile = require("../models/UserProfile");
+const notificationService = require("../services/notificationService");
 
 exports.createNewApplication = async (userId, data) => {
   const { universityId, programId,intake, personalStatement, recommendationLetters } = data;
@@ -16,10 +16,13 @@ exports.createNewApplication = async (userId, data) => {
   const userProfile = await UserProfile.findOne({ userId });
 
   if (!userProfile || !isProfileComplete(userProfile)) {
-    throw new Error("Please complete your profile with education history, experience, and languages before applying to programs");
+    throw new Error(
+      "Please complete your profile with education history, experience, and languages before applying to programs"
+    );
   }
 
-  if (!university || !program) throw new Error("University or program not found");
+  if (!university || !program)
+    throw new Error("University or program not found");
 
    if (intake && intake.season && intake.year) {
     const existing = await Application.findOne({
@@ -60,27 +63,46 @@ exports.createNewApplication = async (userId, data) => {
   );
 
   await application.populate("universityId", "name country logoUrl");
-  await application.populate("programId", "name degreeType fieldOfStudy tuitionFee applicationFee");
+  await application.populate(
+    "programId",
+    "name degreeType fieldOfStudy tuitionFee applicationFee"
+  );
+
+  //add notification
+  await notificationService.createNotification(
+    userId,
+    "application",
+    "Application Draft Created",
+    `Application draft created for ${application.universityId.name} - ${application.programId.name}. Upload required documents and payment to submit.`,
+    application._id
+  );
 
   return application;
 };
 
 //Helper function to check profile completeness
 const isProfileComplete = (profile) => {
-  const hasEducation = profile.educationHistory && profile.educationHistory.length > 0;
+  const hasEducation =
+    profile.educationHistory && profile.educationHistory.length > 0;
   const hasLanguages = profile.languages && profile.languages.length > 0;
   const hasBasicInfo = profile.nationality && profile.dateOfBirth;
-  
+
   return hasEducation && hasLanguages && hasBasicInfo;
 };
 
-exports.getAllApplications = async (userId, { status, page = 1, limit = 10 }) => {
+exports.getAllApplications = async (
+  userId,
+  { status, page = 1, limit = 10 }
+) => {
   const filter = { userId };
   if (status && status !== "all") filter.status = status;
 
   const applications = await Application.find(filter)
     .populate("universityId", "name country logoUrl city")
-    .populate("programId", "name degreeType fieldOfStudy tuitionFee duration applicationFee requirements")
+    .populate(
+      "programId",
+      "name degreeType fieldOfStudy tuitionFee duration applicationFee requirements"
+    )
     .sort({ createdAt: -1 })
     .limit(limit * 1)
     .skip((page - 1) * limit);
@@ -89,7 +111,11 @@ exports.getAllApplications = async (userId, { status, page = 1, limit = 10 }) =>
 
   return {
     applications,
-    pagination: { current: parseInt(page), pages: Math.ceil(total / limit), total },
+    pagination: {
+      current: parseInt(page),
+      pages: Math.ceil(total / limit),
+      total,
+    },
   };
 };
 
@@ -124,18 +150,29 @@ exports.updateApplicationById = async (userId, id, body) => {
     app.progress = { ...(app.progress || {}), ...progress };
     if (notes) {
       app.notes = app.notes || [];
-      app.notes.push({ content: notes, addedBy: "student", addedAt: new Date() });
+      app.notes.push({
+        content: notes,
+        addedBy: "student",
+        addedAt: new Date(),
+      });
     }
     await app.save();
-    await app.populate("universityId", "name country logoUrl").populate("programId", "name degreeType fieldOfStudy tuitionFee");
+    await app
+      .populate("universityId", "name country logoUrl")
+      .populate("programId", "name degreeType fieldOfStudy tuitionFee");
     return app;
   }
 
   if (notes) {
-    update.$push = { notes: { content: notes, addedBy: "student", addedAt: new Date() } };
+    update.$push = {
+      notes: { content: notes, addedBy: "student", addedAt: new Date() },
+    };
   }
 
-  const app = await Application.findOneAndUpdate({ _id: id, userId }, update, { new: true, runValidators: true })
+  const app = await Application.findOneAndUpdate({ _id: id, userId }, update, {
+    new: true,
+    runValidators: true,
+  })
     .populate("universityId", "name country logoUrl")
     .populate("programId", "name degreeType fieldOfStudy tuitionFee");
   if (!app) throw new Error("Application not found");
@@ -155,47 +192,65 @@ exports.updateProgress = async (id, progressPartial) => {
   await app.save();
 
   await app.populate("universityId", "name country logoUrl city");
-  await app.populate("programId", "name degreeType fieldOfStudy tuitionFee duration");
+  await app.populate(
+    "programId",
+    "name degreeType fieldOfStudy tuitionFee duration"
+  );
   return app;
 };
 
-
 exports.deleteApplicationById = async (userId, id) => {
   const app = await Application.findOne({ _id: id, userId });
-  
+
   if (!app) throw new Error("Application not found");
-  
+
   //Prevent deletion of submitted applications
   if (app.status !== "draft") {
     throw new Error("Cannot delete submitted application");
   }
-  
+
   await Application.findOneAndDelete({ _id: id, userId });
-  await Document.updateMany({ applicationId: id }, { $set: { applicationId: null } });
+  await Document.updateMany(
+    { applicationId: id },
+    { $set: { applicationId: null } }
+  );
   return app;
 };
-
 
 exports.submitApplicationById = async (userId, id) => {
   const app = await Application.findOne({ _id: id, userId });
   if (!app) throw new Error("Application not found");
-  if (app.status === "submitted") throw new Error("Application already submitted");
+  if (app.status === "submitted")
+    throw new Error("Application already submitted");
 
-  const requiredSteps = ["personalInfo", "academicInfo", "documents", "payment"];
+  const requiredSteps = [
+    "personalInfo",
+    "academicInfo",
+    "documents",
+    "payment",
+  ];
   const isComplete = requiredSteps.every((s) => !!app.progress?.[s]);
-  if (!isComplete) throw new Error("Application not complete. Please complete all required sections.");
+  if (!isComplete)
+    throw new Error(
+      "Application not complete. Please complete all required sections."
+    );
 
   app.status = "submitted";
   app.submittedAt = new Date();
   await app.save();
 
   await app.populate("universityId", "name country logoUrl city");
-  await app.populate("programId", "name degreeType fieldOfStudy tuitionFee duration");
+  await app.populate(
+    "programId",
+    "name degreeType fieldOfStudy tuitionFee duration"
+  );
   return app;
 };
 
 exports.getDocumentsForApplication = async (userId, id) => {
-  const app = await Application.findOne({ _id: id, userId }).populate("programId");
+  const app = await Application.findOne({ _id: id, userId }).populate(
+    "programId"
+  );
   if (!app) throw new Error("Application not found");
 
   const requiredDocs = app.programId?.requirements?.documentsRequired || [];
@@ -207,7 +262,10 @@ exports.getDocumentsForApplication = async (userId, id) => {
 };
 
 exports.getProgramById = async (id) => {
-  const program = await Program.findById(id).populate("universityId", "name country city applicationFee requirements");
+  const program = await Program.findById(id).populate(
+    "universityId",
+    "name country city applicationFee requirements"
+  );
   if (!program) throw new Error("Program not found");
   return program;
 };

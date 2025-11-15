@@ -285,7 +285,7 @@ export default function RegistrationQuestionnaire({
         return (
           <div className="space-y-6">
             <div className="w-24 h-24 mx-auto rounded-lg bg-primary/20 backdrop-blur flex items-center justify-center mb-6">
-              <img src="/img5.jpg" alt="Available Funds" className="w-16 h-16 object-cover rounded" />
+              <img src="/img10.png" alt="Available Funds" className="w-16 h-16 object-cover rounded" />
             </div>
             <div className="text-center space-y-6">
               <h2 className="text-2xl font-semibold text-foreground">Available funds for tuition and living expenses abroad?</h2>
@@ -374,7 +374,7 @@ export default function RegistrationQuestionnaire({
         return (
           <div className="space-y-6">
             <div className="w-24 h-24 mx-auto rounded-lg bg-primary/20 backdrop-blur flex items-center justify-center mb-6">
-              <img src="/images8.png" alt="Education Level" className="w-16 h-16 object-cover rounded" />
+              <img src="/img9.png" alt="Education Level" className="w-16 h-16 object-cover rounded" />
             </div>
             <div className="text-center space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">Highest Level of Education</h2>

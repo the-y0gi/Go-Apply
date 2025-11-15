@@ -212,7 +212,7 @@ export default function ApplicationsPage() {
                   title="Under Review"
                   value={
                     applications.filter(
-                      (a) => a.status.toLowerCase() === "under review"
+                      (a) => a.status.toLowerCase() === "under_review"
                     ).length
                   }
                   icon={<Clock className="h-8 w-8 text-yellow-600" />}

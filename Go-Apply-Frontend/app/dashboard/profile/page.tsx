@@ -204,7 +204,7 @@ export default function ProfilePage() {
 
       setSuccessMessage("Experience updated successfully");
     } catch (error) {
-      console.error("Error updating experience:", error);
+     console.error("Error updating experience:", error);
       setError("Failed to update experience");
     }
   };

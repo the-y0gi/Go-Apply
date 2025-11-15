@@ -119,11 +119,11 @@ const sendApplicationToCollege = async (application) => {
     // Webhook to university system
     // await sendWebhookToUniversity(collegeData);
 
-    console.log(
-      `Application sent to college: ${application.universityId?.name}`
-    );
+    // console.log(
+    //   `Application sent to college: ${application.universityId?.name}`
+    // );
   } catch (error) {
-    console.error("Error sending application to college:", error);
+    // console.error("Error sending application to college:", error);
   }
 };
 

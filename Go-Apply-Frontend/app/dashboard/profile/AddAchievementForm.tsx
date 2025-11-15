@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import toast, { Toaster } from "react-hot-toast";
 
 interface AddAchievementFormProps {
   onSave: (achievement: { title: string; description: string; date: string }) => void;
@@ -32,13 +33,13 @@ export default function AddAchievementForm({
 
   const handleSubmit = () => {
     if (!form.title || !form.date) {
-      alert("Title and Date are required!");
+      toast.error("Title and Date are required!");
       return;
     }
     const selectedDate = new Date();
     const today = new Date();
     if(selectedDate > today){
-      alert("Date cannot be in the future!");
+      toast.error("Date cannot be in the future!");
       return;
     }
     // Pass form data to parent
@@ -46,7 +47,9 @@ export default function AddAchievementForm({
   };
 
   return (
+    
     <div className="border p-4 rounded-lg bg-background/50 backdrop-blur">
+      <Toaster position="top-right" />
       <h2 className="font-semibold mb-4 text-lg">
         {initialData ? "Edit Achievement" : "Add Achievement"}
       </h2>

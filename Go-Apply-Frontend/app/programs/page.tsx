@@ -48,25 +48,27 @@ import { Program, University } from "@/models/program";
 import { set } from "date-fns";
 import Navbar from "@/components/navbar";
 import SignInModal from "@/components/auth/SignInModal";
+import toast, { Toaster } from "react-hot-toast";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 // fallback notifier if react-hot-toast is not installed
 // keeps existing `toast.success(...)` / `toast.error(...)` calls working
-const toast = {
-  success: (msg: string) => {
-    try {
-      window.alert(msg);
-    } catch {
-      // console.log("SUCCESS:", msg);
-    }
-  },
-  error: (msg: string) => {
-    try {
-      window.alert(msg);
-    } catch {
-      console.error("ERROR:", msg);
-    }
-  },
-};
+// const toast = {
+//   success: (msg: string) => {
+//     try {
+//       toast.success(msg);
+//     } catch {
+//       // console.log("SUCCESS:", msg);
+//     }
+//   },
+//   error: (msg: string) => {
+//     try {
+//       toast.error(msg);
+//     } catch {
+//       console.error("ERROR:", msg);
+//     }
+//   },
+// };
 
 const formatDeadline = (dateString: string) => {
   if (!dateString) return "";
@@ -100,7 +102,7 @@ const [selectedProgram, setSelectedProgram] = useState<University | null>(null);
         const res = await axios.get<{
           success: boolean;
           data: { programs: Program[] };
-        }>("http://localhost:5000/api/search/programs");
+        }>("{API_URL}/api/search/programs");
 
         if (!mounted) return;
 
@@ -377,7 +379,7 @@ const [selectedProgram, setSelectedProgram] = useState<University | null>(null);
            collapsed={sidebarCollapsed} 
            onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
          /> */}
-
+          <Toaster position="top-right" />
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* <DashboardHeader /> */}
         <div>

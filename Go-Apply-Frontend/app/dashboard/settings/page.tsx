@@ -80,17 +80,17 @@ export default function SettingsPage() {
 
   const handleSaveSettings = () => {
     // In real app, this would save to backend
-    console.log("Saving settings:", settings)
+    // console.log("Saving settings:", settings)
   }
 
   const handleExportData = () => {
     // In real app, this would trigger data export
-    console.log("Exporting user data...")
+    // console.log("Exporting user data...")
   }
 
   const handleDeleteAccount = () => {
     // In real app, this would show confirmation dialog and delete account
-    console.log("Delete account requested...")
+    // console.log("Delete account requested...")
   }
 
   return (

@@ -46,23 +46,16 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import axios from "axios";
 import { Program, University } from "@/models/program";
 import { set } from "date-fns";
+import toast, { Toaster } from "react-hot-toast";
 
-const toast = {
-  success: (msg: string) => {
-    try {
-      window.alert(msg);
-    } catch {
-      console.error("error", msg);
-    }
-  },
-  error: (msg: string) => {
-    try {
-      window.alert(msg);
-    } catch {
-      console.error("ERROR:", msg);
-    }
-  },
-};
+// const toast = {
+//   success: (msg: string) => {
+//     hotToast.success(msg);
+//   },
+//   error: (msg: string) => {
+//     hotToast.error(msg);
+//   },
+// };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -433,7 +426,7 @@ export default function SearchPage() {
           "Content-Type": "application/json",
         },
       });
-      console.log("[handleApplyNow] server response:", res?.data);
+      // console.log("[handleApplyNow] server response:", res?.data);
 
       if (res?.data?.success) {
         setAppliedIntakes((prev) => {
@@ -474,7 +467,7 @@ export default function SearchPage() {
       setShowAppliedButton(true);
       toast.success("Application created — open Applied Programs to view it.");
     } catch (err: any) {
-      console.error(
+       console.error(
         "Create application failed:",
         err?.response?.data ?? err?.message
       );
@@ -544,6 +537,7 @@ export default function SearchPage() {
   }
   return (
     <ProtectedRoute>
+      <Toaster position="top-right" />
       <div className="flex h-screen">
         <DashboardSidebar
           collapsed={sidebarCollapsed}

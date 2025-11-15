@@ -74,7 +74,7 @@ export default function Navbar() {
   const handleQuestionnaireComplete = (profileData: any) => {
     setQuestionnaireOpen(false)
     // Redirect to dashboard or show success message
-    console.log('Registration complete:', { email: userEmail, profileData })
+    // console.log('Registration complete:', { email: userEmail, profileData })
     // You would typically save this data and redirect to dashboard
     window.location.href = '/dashboard'
   }

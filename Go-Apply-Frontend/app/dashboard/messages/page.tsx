@@ -141,7 +141,7 @@ export default function MessagesPage() {
   const handleSendMessage = () => {
     if (newMessage.trim()) {
       // In a real app, this would send the message to the server
-      console.log("Sending message:", newMessage)
+    //  console.log("Sending message:", newMessage)
       setNewMessage("")
     }
   }

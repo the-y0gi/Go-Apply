@@ -44,7 +44,7 @@ export const useNotifications = () => {
       setNotifications(response.data.data.notifications);
       setUnreadCount(response.data.data.unreadCount);
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+       console.error("Error fetching notifications:", error);
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,7 @@ export const useNotifications = () => {
         prev.map((n) => ({ ...n, isRead: true }))
       );
     } catch (error) {
-      console.error("Error marking notifications as read:", error);
+       console.error("Error marking notifications as read:", error);
     }
   };
 

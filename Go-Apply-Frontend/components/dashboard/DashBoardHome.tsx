@@ -204,7 +204,7 @@ export default function DashboardHome() {
         });
         setProgress(res.data.data.progress);
       } catch (err) {
-        console.error("Progress fetch failed:", err);
+         console.error("Progress fetch failed:", err);
       } finally {
         setLoading(false);
       }

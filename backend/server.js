@@ -317,7 +317,7 @@ app.use('/api/contact', contactRoutes);
 app.use("/api/progress", progressRoutes);
 app.use('/api/notifications', notificationRoutes);
 
-// Error handler
+// Error handler...
 app.use((error, req, res, next) => {
   console.error('Error:', error);
 

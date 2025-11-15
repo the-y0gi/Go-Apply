@@ -4,8 +4,7 @@ const User = require("../models/User");
 const UserProfile = require("../models/UserProfile");
 const notificationService = require("../services/notificationService");
 const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
-const fs = require("fs");
-const path = require("path");
+const { connectDB } = require("../config/db");
 
 
 const {
@@ -315,11 +314,80 @@ exports.initiateRefund = async (req, res) => {
   }
 };
 
+// exports.generatePaymentReceipt = async (req, res) => {
+//   try {
+//     const paymentId = req.params.id;
+
+//     // Fetch payment, user, application...
+//     const payment = await Payment.findById(paymentId);
+//     if (!payment) return res.status(404).send("Payment not found");
+
+//     const user = await User.findById(payment.userId);
+//     const application = await Application.findById(payment.applicationId)
+//       .populate("universityId")
+//       .populate("programId");
+
+//     // Load template file
+//     const templatePath = path.join(
+//       process.cwd(),
+//       "templates",
+//       "payment-receipt.html"
+//     );
+//     let html = fs.readFileSync(templatePath, "utf8");
+
+//     // Replace placeholders
+//     html = html
+//       .replace("{{generated_date}}", new Date().toLocaleString())
+//       .replace(
+//         "{{user_name}}",
+//         user?.fullName ||
+//           `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
+//           "N/A"
+//       )
+//       .replace("{{user_email}}", user?.email || "N/A")
+//       // .replace("{{user_phone}}", user?.phone || "N/A")
+//       // .replace("{{user_address}}", user?.address || "N/A")
+//       .replace("{{university_name}}", application.universityId?.name || "N/A")
+//       .replace(
+//         "{{university_country}}",
+//         application.universityId?.country || "N/A"
+//       )
+//       .replace("{{program_name}}", application.programId?.name || "N/A")
+//       .replace("{{degree_type}}", application.programId?.degreeType || "N/A")
+//       .replace("{{order_id}}", payment.razorpayOrderId || "N/A")
+//       .replace("{{transaction_id}}", payment.razorpayPaymentId || "N/A")
+//       .replace("{{amount}}", payment.amount)
+//       .replace("{{currency}}", payment.currency)
+//       .replace("{{status}}", payment.status)
+//       .replace("{{paid_date}}", new Date(payment.paidAt).toLocaleString());
+
+//     // Convert to PDF
+//     pdf.create(html).toBuffer((err, buffer) => {
+//       if (err) return res.status(500).send("Error generating PDF");
+
+//       res.setHeader("Content-Type", "application/pdf");
+//       res.setHeader(
+//         "Content-Disposition",
+//         `attachment; filename=receipt_${paymentId}.pdf`
+//       );
+
+//       res.send(buffer);
+//     });
+//   } catch (error) {
+//     console.error("Receipt Error:", error);
+//     res.status(500).send("Failed to generate receipt");
+//   }
+// };
+
+
+
+
 exports.generatePaymentReceipt = async (req, res) => {
   try {
+    await connectDB(); // VERY IMPORTANT FOR VERCEL
+
     const paymentId = req.params.id;
 
-    // Fetch payment, user, application...
     const payment = await Payment.findById(paymentId);
     if (!payment) return res.status(404).send("Payment not found");
 
@@ -328,72 +396,7 @@ exports.generatePaymentReceipt = async (req, res) => {
       .populate("universityId")
       .populate("programId");
 
-    // Load template file
-    const templatePath = path.join(
-      process.cwd(),
-      "templates",
-      "payment-receipt.html"
-    );
-    let html = fs.readFileSync(templatePath, "utf8");
-
-    // Replace placeholders
-    html = html
-      .replace("{{generated_date}}", new Date().toLocaleString())
-      .replace(
-        "{{user_name}}",
-        user?.fullName ||
-          `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
-          "N/A"
-      )
-      .replace("{{user_email}}", user?.email || "N/A")
-      // .replace("{{user_phone}}", user?.phone || "N/A")
-      // .replace("{{user_address}}", user?.address || "N/A")
-      .replace("{{university_name}}", application.universityId?.name || "N/A")
-      .replace(
-        "{{university_country}}",
-        application.universityId?.country || "N/A"
-      )
-      .replace("{{program_name}}", application.programId?.name || "N/A")
-      .replace("{{degree_type}}", application.programId?.degreeType || "N/A")
-      .replace("{{order_id}}", payment.razorpayOrderId || "N/A")
-      .replace("{{transaction_id}}", payment.razorpayPaymentId || "N/A")
-      .replace("{{amount}}", payment.amount)
-      .replace("{{currency}}", payment.currency)
-      .replace("{{status}}", payment.status)
-      .replace("{{paid_date}}", new Date(payment.paidAt).toLocaleString());
-
-    // Convert to PDF
-    pdf.create(html).toBuffer((err, buffer) => {
-      if (err) return res.status(500).send("Error generating PDF");
-
-      res.setHeader("Content-Type", "application/pdf");
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename=receipt_${paymentId}.pdf`
-      );
-
-      res.send(buffer);
-    });
-  } catch (error) {
-    console.error("Receipt Error:", error);
-    res.status(500).send("Failed to generate receipt");
-  }
-};
-
-
-exports.generatePaymentReceipt = async (req, res) => {
-  try {
-    const paymentId = req.params.id;
-
-    const payment = await Payment.findById(paymentId);
-    if (!payment) return res.status(404).send("Payment not found");
-
-    const user = await User.findById(payment.userId);
-    const application = await Application.findById(payment.applicationId)
-      .populate("universityId")
-      .populate("programId");
-
-    // ---- CREATE PDF ----
+    // ---- Generate PDF ----
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage();
     const { width, height } = page.getSize();
@@ -410,7 +413,7 @@ exports.generatePaymentReceipt = async (req, res) => {
     write(`Generated On: ${new Date().toLocaleString()}`);
 
     y -= 10;
-    write("-----------------------------", 12);
+    write("-----------------------------");
 
     write("User Details", 14);
     write(`Name: ${user?.fullName || "N/A"}`);
@@ -449,3 +452,4 @@ exports.generatePaymentReceipt = async (req, res) => {
     return res.status(500).send("Failed to generate receipt");
   }
 };
+

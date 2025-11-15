@@ -3,6 +3,10 @@ const Application = require("../models/Application");
 const User = require("../models/User");
 const UserProfile = require("../models/UserProfile");
 const notificationService = require("../services/notificationService");
+const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
+const fs = require("fs");
+const path = require("path");
+
 
 const {
   createOrder,
@@ -373,5 +377,75 @@ exports.generatePaymentReceipt = async (req, res) => {
   } catch (error) {
     console.error("Receipt Error:", error);
     res.status(500).send("Failed to generate receipt");
+  }
+};
+
+
+exports.generatePaymentReceipt = async (req, res) => {
+  try {
+    const paymentId = req.params.id;
+
+    const payment = await Payment.findById(paymentId);
+    if (!payment) return res.status(404).send("Payment not found");
+
+    const user = await User.findById(payment.userId);
+    const application = await Application.findById(payment.applicationId)
+      .populate("universityId")
+      .populate("programId");
+
+    // ---- CREATE PDF ----
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage();
+    const { width, height } = page.getSize();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+    let y = height - 50;
+
+    const write = (text, size = 12) => {
+      page.drawText(text, { x: 50, y, size, font, color: rgb(0, 0, 0) });
+      y -= 22;
+    };
+
+    write("GoApply - Payment Receipt", 18);
+    write(`Generated On: ${new Date().toLocaleString()}`);
+
+    y -= 10;
+    write("-----------------------------", 12);
+
+    write("User Details", 14);
+    write(`Name: ${user?.fullName || "N/A"}`);
+    write(`Email: ${user?.email || "N/A"}`);
+
+    y -= 10;
+    write("-----------------------------");
+
+    write("Application Details", 14);
+    write(`University: ${application.universityId?.name || "N/A"}`);
+    write(`Country: ${application.universityId?.country || "N/A"}`);
+    write(`Program: ${application.programId?.name || "N/A"}`);
+    write(`Degree Type: ${application.programId?.degreeType || "N/A"}`);
+
+    y -= 10;
+    write("-----------------------------");
+
+    write("Payment Details", 14);
+    write(`Order ID: ${payment.razorpayOrderId}`);
+    write(`Transaction ID: ${payment.razorpayPaymentId}`);
+    write(`Amount: ${payment.amount} ${payment.currency}`);
+    write(`Status: ${payment.status}`);
+    write(`Paid At: ${new Date(payment.paidAt).toLocaleString()}`);
+
+    const pdfBytes = await pdfDoc.save();
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=receipt_${paymentId}.pdf`
+    );
+
+    return res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    console.error("Receipt Error:", err);
+    return res.status(500).send("Failed to generate receipt");
   }
 };

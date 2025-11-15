@@ -79,10 +79,10 @@ export interface UserProfile {
     details?: string; // For undergraduate/postgraduate
   };
   educationHistory?: Education[];
-  experience: Experience[];
-  technicalSkills: string[];
-  languages: Language[];
-  achievements: string[];
+  experience?: Experience[];
+  technicalSkills?: string[];
+  languages?: Language[];
+  achievements?: string[];
   token?:string;
   
   standardizedTests?: Array<'GMAT' | 'GRE' | 'None'>;

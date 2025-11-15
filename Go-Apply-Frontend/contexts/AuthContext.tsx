@@ -150,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userId: user.id,
         ...profile,
         ...profileData,
+        // experience: data.experience ?? [],
         updatedAt: new Date(),
         createdAt: profile?.createdAt || new Date(),
       };

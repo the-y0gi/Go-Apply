@@ -237,11 +237,11 @@ export default function HelpPage() {
                   </CardHeader>
                   <CardContent>
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
-                      <TabsList className="grid w-full grid-cols-4">
+                      <TabsList className="grid w-full grid-cols-1">
                         <TabsTrigger value="faq">FAQ</TabsTrigger>
-                        <TabsTrigger value="guides">Guides</TabsTrigger>
+                        {/* <TabsTrigger value="guides">Guides</TabsTrigger>
                         <TabsTrigger value="contact">Contact</TabsTrigger>
-                        <TabsTrigger value="feedback">Feedback</TabsTrigger>
+                        <TabsTrigger value="feedback">Feedback</TabsTrigger> */}
                       </TabsList>
 
                       {/* FAQ Section */}

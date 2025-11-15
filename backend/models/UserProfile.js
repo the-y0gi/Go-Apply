@@ -141,6 +141,5 @@ const userProfileSchema = new mongoose.Schema(
 );
 
 // Index for better performance
-userProfileSchema.index({ userId: 1 });
 
 module.exports = mongoose.model("UserProfile", userProfileSchema);

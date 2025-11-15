@@ -34,9 +34,9 @@ app.use(limiter);
 app.use(morgan('dev'));
 app.use(
   cors({
-    // origin: process.env.CLIENT_URL || 'http://localhost:3000',
-    // credentials: true,
-    origin: "*"
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    credentials: true,
+    // origin: "*"
   })
 );
 app.use(express.json({ limit: '10mb' }));

@@ -51,24 +51,7 @@ import SignInModal from "@/components/auth/SignInModal";
 import toast, { Toaster } from "react-hot-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-// fallback notifier if react-hot-toast is not installed
-// keeps existing `toast.success(...)` / `toast.error(...)` calls working
-// const toast = {
-//   success: (msg: string) => {
-//     try {
-//       toast.success(msg);
-//     } catch {
-//       // console.log("SUCCESS:", msg);
-//     }
-//   },
-//   error: (msg: string) => {
-//     try {
-//       toast.error(msg);
-//     } catch {
-//       console.error("ERROR:", msg);
-//     }
-//   },
-// };
+
 
 const formatDeadline = (dateString: string) => {
   if (!dateString) return "";
@@ -166,12 +149,7 @@ export default function ProgramsPage() {
   const [registerOpen, setRegisterOpen] = useState(false)
   // store applied program ids as strings (backend _id)
   const [appliedPrograms, setAppliedPrograms] = useState<string[]>([]);
-    // try {
-    //   return JSON.parse(localStorage.getItem("appliedPrograms") || "[]");
-    // } catch {
-    //   return [];
-    // }
-  // });
+
   const [showAppliedButton, setShowAppliedButton] = useState(false);
   // update floating button visibility when appliedPrograms change
   useEffect(() => {
@@ -268,77 +246,7 @@ const [selectedProgram, setSelectedProgram] = useState<University | null>(null);
 };
 
   const handleApplyNow = async (program: University) => {
-    // if (!program?.id) return;
 
-    // // prevent duplicate/apply-in-flight
-    // if (
-    //   appliedPrograms.includes(program.id) ||
-    //   applyingIds.includes(program.id)
-    // )
-    //   return;
-
-    // const rawToken = localStorage.getItem("authToken") || "";
-    // const token = rawToken.replace(/^"|"$/g, "").trim();
-    // if (!token) {
-    //   toast.error("Not signed in. Please login.");
-    //   router.push("/auth/login");
-    //   return;
-    // }
-
-    // try {
-    //   // mark as applying
-    //   setApplyingIds((prev) => [...prev, program.id]);
-
-    //   const payload = {
-    //     universityId: program.universityId, // ensure mapping included this field
-    //     programId: program.id,
-    //     personalStatement: "", // optional; collect if needed
-    //   };
-
-    //   const res = await axios.post(
-    //     "http://localhost:5000/api/applications",
-    //     payload,
-    //     {
-    //       headers: {
-    //         Authorization: `Bearer ${token}`,
-    //         "Content-Type": "application/json",
-    //       },
-    //     }
-    //   );
-
-    //   if (res?.data?.success) {
-    //     // persist applied id and show button
-    //     setAppliedPrograms((prev) => {
-    //       const next = [...prev, program.id];
-    //       try {
-    //         localStorage.setItem("appliedPrograms", JSON.stringify(next));
-    //       } catch {}
-    //       return next;
-    //     });
-    //     setShowAppliedButton(true);
-    //     toast.success(
-    //       "Application created — open Applied Programs to view it."
-    //     );
-    //   } else {
-    //     toast.error(res?.data?.message || "Failed to create application");
-    //   }
-    // } catch (err: any) {
-    //   console.error(
-    //     "Create application failed:",
-    //     err?.response?.data ?? err?.message
-    //   );
-    //   if (err?.response?.status === 401) {
-    //     toast.error("Session expired. Please login again.");
-    //     router.push("/auth/login");
-    //   } else {
-    //     toast.error(
-    //       err?.response?.data?.message ?? "Failed to create application"
-    //     );
-    //   }
-    // } finally {
-    //   // remove from applying
-    //   setApplyingIds((prev) => prev.filter((id) => id !== program.id));
-    // }
     window.dispatchEvent(new Event("signInOpen"))
     setSignInOpen(true);
   };
@@ -377,15 +285,11 @@ const [selectedProgram, setSelectedProgram] = useState<University | null>(null);
   return (
     //  <ProtectedRoute>
     <div className="flex h-screen">
-      {/* <DashboardSidebar 
-           collapsed={sidebarCollapsed} 
-           onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
-         /> */}
+   
           <Toaster position="top-right" />
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* <DashboardHeader /> */}
         <div>
-          {/* ✅ Navbar at top */}
+          {/*  Navbar at top */}
           <Navbar />
         </div>
         <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
@@ -857,6 +761,5 @@ const [selectedProgram, setSelectedProgram] = useState<University | null>(null);
         </main>
       </div>
     </div>
-    //  </ProtectedRoute>
   );
 }

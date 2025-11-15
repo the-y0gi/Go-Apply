@@ -50,7 +50,7 @@ type AnyObj = Record<string, any>;
 type MergedForUI = {
   application: AnyObj;
   payment: AnyObj | null;
-  uiStatus: "completed" | "pending" | "required";
+  uiStatus: "completed" | "pending";
   amount?: number;
   currency?: string;
   paymentMethod?: string;
@@ -81,7 +81,7 @@ export default function PaymentsPage() {
   const searchParams = useSearchParams();
   const paramAppId = searchParams.get("applicationId");
 
-  // Load token from localStorage (client-side only)
+  // Load token from localStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
     const raw = localStorage.getItem("authToken") || "";
@@ -119,7 +119,7 @@ export default function PaymentsPage() {
     };
   }, []);
 
-  // Fetch applications and payments, normalize and merge for UI
+  // Fetch applications and payments
   useEffect(() => {
     if (!token) {
       setLoading(false);
@@ -150,7 +150,6 @@ export default function PaymentsPage() {
           let appIdStr = rawAppId;
 
           if (rawAppId && typeof rawAppId === "object") {
-            // handle { _id: '...' } or { $oid: '...' } or mongoose doc
             appIdStr =
               rawAppId._id || rawAppId.$oid || rawAppId.toString() || "";
           }
@@ -181,7 +180,7 @@ export default function PaymentsPage() {
                 p.status === "pending")
           );
 
-          let uiStatus: MergedForUI["uiStatus"] = "required";
+          let uiStatus: MergedForUI["uiStatus"] = "pending";
           let selPayment: AnyObj | null = null;
 
           if (paid) {
@@ -191,7 +190,7 @@ export default function PaymentsPage() {
             uiStatus = "pending";
             selPayment = pending;
           } else {
-            uiStatus = "required";
+            uiStatus = "pending"; 
             selPayment = null;
           }
 
@@ -222,7 +221,6 @@ export default function PaymentsPage() {
 
         setApplications(apps);
         setPayments(normalizedPays);
-        // setMergedData(mergedUI);
 
         const eligibleMergedUI = mergedUI.filter((item) => {
           const progress = item.application?.progress;
@@ -291,7 +289,6 @@ export default function PaymentsPage() {
         "Please complete Personal Info, Academic Info, and Documents before making payment."
       );
     }
-    // choose amount: prefer application.applicationFee else fallback
     const amount =
       application.programId?.applicationFee ||
       application.applicationFee ||
@@ -352,7 +349,7 @@ export default function PaymentsPage() {
           email: application?.applicantEmail || "user@email",
           contact: application?.applicantPhone || "9999999999",
         },
-        theme: { color: "#2563eb" },
+        theme: { color: "#16A34A" },
       };
 
       new (window as any).Razorpay(options).open();
@@ -414,34 +411,6 @@ export default function PaymentsPage() {
                       Manage your application fees and payments
                     </p>
                   </div>
-
-                  {/* <div className="flex items-center gap-3">
-                    <select
-                      value={selectedAppId}
-                      onChange={(e) => setSelectedAppId(e.target.value)}
-                      className="border border-border rounded px-3 py-2 text-sm"
-                      disabled={loadingApps}
-                    >
-                      <option value="">{loadingApps ? "Loading applications..." : "Select Application"}</option>
-
-                      {applications.map((app) => (
-                        <option key={app._id} value={app._id}>
-                          {app.universityId?.name
-                            ? `${app.universityId.name} (${app.universityId.country || "—"}) – ${app.programId?.name || "Unknown Program"}`
-                            : `Application ${app._id}`}
-                        </option>
-                      ))}
-                    </select>
-
-                    <Button
-                      className="bg-primary hover:bg-primary/90"
-                      onClick={() => startPayment(selectedAppId)}
-                      disabled={!selectedAppId || creatingOrder}
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Pay Fee
-                    </Button>
-                  </div> */}
                 </div>
               </motion.div>
 
@@ -552,15 +521,6 @@ export default function PaymentsPage() {
                           </div>
                         </motion.div>
                       ))}
-
-                      {/* <Button
-                        variant="outline"
-                        className="w-full bg-background/50 backdrop-blur border-border/50"
-                        onClick={() => startPayment(selectedAppId)}
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add New Method
-                      </Button> */}
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -585,11 +545,10 @@ export default function PaymentsPage() {
 
                     <CardContent>
                       <Tabs value={activeTab} onValueChange={setActiveTab}>
-                        <TabsList className="grid w-full grid-cols-4">
+                        <TabsList className="grid w-full grid-cols-3">
                           <TabsTrigger value="all">All</TabsTrigger>
                           <TabsTrigger value="completed">Completed</TabsTrigger>
                           <TabsTrigger value="pending">Pending</TabsTrigger>
-                          <TabsTrigger value="required">Required</TabsTrigger>
                         </TabsList>
 
                         <TabsContent
@@ -617,9 +576,7 @@ export default function PaymentsPage() {
 
                                 const paymentStatusLabel = isPaid
                                   ? "Completed"
-                                  : isPending
-                                  ? "Pending"
-                                  : "Required";
+                                  : "Pending"; 
 
                                 const statusColor = isPaid
                                   ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
@@ -708,44 +665,6 @@ export default function PaymentsPage() {
                                           </div>
                                         </div>
                                       </div>
-
-                                      {/* <div className="flex flex-col gap-2 ml-4">
-                                        {isPaid ? (
-                                          <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="bg-background/50 backdrop-blur border-border/50"
-                                            onClick={() =>
-                                              handleDownloadReceipt(
-                                                item.paymentId
-                                              )
-                                            }
-                                          >
-                                            <Download className="w-4 h-4 mr-1" />
-                                            Receipt
-                                          </Button>
-                                        ) : isPending ? (
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="text-primary border-primary hover:bg-primary/10"
-                                            onClick={() =>
-                                              startPayment(app._id)
-                                            }
-                                          >
-                                            Pay Now
-                                          </Button>
-                                        ) : (
-                                          <Button
-                                            size="sm"
-                                            onClick={() =>
-                                              startPayment(app._id)
-                                            }
-                                          >
-                                            Pay Now
-                                          </Button>
-                                        )}
-                                      </div> */}
 
                                       <div className="flex flex-col gap-2 ml-4">
                                         {isPaid ? (

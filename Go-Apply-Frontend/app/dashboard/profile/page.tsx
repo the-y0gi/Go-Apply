@@ -88,6 +88,11 @@ export default function ProfilePage() {
     number | null
   >(null);
 
+  //upload profile image
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   // Keep track of original data for cancel functionality
   const [originalData, setOriginalData] = useState({});
 
@@ -101,6 +106,7 @@ export default function ProfilePage() {
     nationality: profile?.nationality || "Australian",
     address: profile?.address || "",
     bio: profile?.bio || "",
+    profilePicture: user?.profilePicture || "",
     educationHistory: profile?.educationHistory || [],
     experience: profile?.experience || [],
     technicalSkills: profile?.technicalSkills || [],
@@ -152,6 +158,7 @@ export default function ProfilePage() {
         nationality: profile?.nationality || "Australian",
         address: profile?.address || "",
         bio: profile?.bio || "",
+        profilePicture: user?.profilePicture || "",
       };
       setProfileData((prev) => ({
         ...prev,
@@ -169,6 +176,102 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchUserProfile();
   }, []);
+
+  // Profile picture upload API
+  const uploadProfilePicture = async (file: File) => {
+    const formData = new FormData();
+    formData.append("profilePicture", file);
+
+    const rawToken = localStorage.getItem("authToken") || "";
+    const token = rawToken.replace(/^"|"$/g, "").trim();
+
+    const response = await axios.patch(
+      `${API_URL}/auth/profile-picture`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response.data;
+  };
+
+  // File select handler
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        setError("Please select a valid image file (JPEG, PNG, WebP)");
+        return;
+      }
+
+      // Check file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Image size should be less than 5MB");
+        return;
+      }
+
+      setSelectedFile(file);
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result === "string") {
+          setImagePreview(result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Upload image handler
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
+    try {
+      setUploading(true);
+      setError("");
+
+      const result = await uploadProfilePicture(selectedFile);
+
+      if (result.success) {
+        setSuccessMessage("Profile picture updated successfully");
+
+        setProfileData((prev) => ({
+          ...prev,
+          profilePicture: result.data.profilePicture,
+        }));
+
+        setSelectedFile(null);
+        setImagePreview(null);
+
+        if (updateProfile) {
+          await updateProfile({
+            profilePicture: result.data.profilePicture,
+          } as any);
+        }
+
+        await fetchUserProfile();
+      }
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      setError(
+        error.response?.data?.message || "Failed to upload profile picture"
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Cancel upload
+  const handleCancelUpload = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+    setError("");
+  };
 
   const handleAddExperience = async (exp: Experience, index?: number) => {
     try {
@@ -275,9 +378,6 @@ export default function ProfilePage() {
         educationHistory: newEducationHistory,
       }));
 
-      // Update backend
-      // const token = localStorage.getItem('token')
-      //      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTBiNTgwNjgwY2Q5OTBlMjQ4MGM4YTIiLCJpYXQiOjE3NjIzNjE2ODYsImV4cCI6MTc2NDk1MzY4Nn0.V9yJwOZOSwtVKl2n1gEzKMbIXQSUBrdC77Qebs9xqEA"
       const rawToken = localStorage.getItem("authToken") || "";
       const token = rawToken.replace(/^"|"$/g, "").trim();
 
@@ -311,10 +411,6 @@ export default function ProfilePage() {
         technicalSkills: updatedSkills,
       }));
 
-      // Update backend
-      // const token = localStorage.getItem('token')
-      // const token =
-      //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTBiNTgwNjgwY2Q5OTBlMjQ4MGM4YTIiLCJpYXQiOjE3NjIzNjE2ODYsImV4cCI6MTc2NDk1MzY4Nn0.V9yJwOZOSwtVKl2n1gEzKMbIXQSUBrdC77Qebs9xqEA";
       const rawToken = localStorage.getItem("authToken") || "";
       const token = rawToken.replace(/^"|"$/g, "").trim();
 
@@ -343,10 +439,6 @@ export default function ProfilePage() {
       const newLanguages = [...profileData.languages, lang];
       setProfileData((prev) => ({ ...prev, languages: newLanguages }));
 
-      // Update backend
-      // const token = localStorage.getItem('token')
-      // const token =
-      //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTBiNTgwNjgwY2Q5OTBlMjQ4MGM4YTIiLCJpYXQiOjE3NjIzNjE2ODYsImV4cCI6MTc2NDk1MzY4Nn0.V9yJwOZOSwtVKl2n1gEzKMbIXQSUBrdC77Qebs9xqEA";
       const rawToken = localStorage.getItem("authToken") || "";
       const token = rawToken.replace(/^"|"$/g, "").trim();
       await axios.put(
@@ -389,10 +481,6 @@ export default function ProfilePage() {
         languages: updatedLanguages,
       });
 
-      // Update backend
-      // const token = localStorage.getItem('token')
-      // const token =
-      //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTBiNTgwNjgwY2Q5OTBlMjQ4MGM4YTIiLCJpYXQiOjE3NjIzNjE2ODYsImV4cCI6MTc2NDk1MzY4Nn0.V9yJwOZOSwtVKl2n1gEzKMbIXQSUBrdC77Qebs9xqEA";
       const rawToken = localStorage.getItem("authToken") || "";
       const token = rawToken.replace(/^"|"$/g, "").trim();
       await axios.put(
@@ -420,11 +508,6 @@ export default function ProfilePage() {
     try {
       const newAchievements = [...profileData.achievements, ach];
       setProfileData((prev) => ({ ...prev, achievements: newAchievements }));
-
-      // Update backend
-      // const token = localStorage.getItem('token')
-      // const token =
-      //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTBiNTgwNjgwY2Q5OTBlMjQ4MGM4YTIiLCJpYXQiOjE3NjIzNjE2ODYsImV4cCI6MTc2NDk1MzY4Nn0.V9yJwOZOSwtVKl2n1gEzKMbIXQSUBrdC77Qebs9xqEA";
       const rawToken = localStorage.getItem("authToken") || "";
       const token = rawToken.replace(/^"|"$/g, "").trim();
       await axios.put(
@@ -456,7 +539,6 @@ export default function ProfilePage() {
       setLoading(true);
       setError("");
 
-      //  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTBiNTgwNjgwY2Q5OTBlMjQ4MGM4YTIiLCJpYXQiOjE3NjIzNjE2ODYsImV4cCI6MTc2NDk1MzY4Nn0.V9yJwOZOSwtVKl2n1gEzKMbIXQSUBrdC77Qebs9xqEA"
       const rawToken = localStorage.getItem("authToken") || "";
       const token = rawToken.replace(/^"|"$/g, "").trim();
       // Update profile through backend API
@@ -481,7 +563,6 @@ export default function ProfilePage() {
       );
 
       if (response.data.success) {
-        // Update original data to current data after successful save
         setOriginalData({ ...profileData });
         setIsEditing(false);
         setSuccessMessage("Profile updated successfully");
@@ -640,7 +721,7 @@ export default function ProfilePage() {
                 <Card className="bg-card/50 backdrop-blur border-border/50 hover:bg-card/60 hover:border-primary/20 transition-all duration-300">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-6">
-                      <div className="relative">
+                      {/* <div className="relative">
                         <Avatar className="w-24 h-24">
                           <AvatarImage
                             src="/placeholder-user.jpg"
@@ -658,6 +739,76 @@ export default function ProfilePage() {
                           >
                             <Upload className="w-3 h-3" />
                           </Button>
+                        )}
+                      </div> */}
+
+                      <div className="relative">
+                        <Avatar className="w-24 h-24 border-2 border-border">
+                          <AvatarImage
+                            src={
+                              imagePreview ||
+                              profileData.profilePicture ||
+                              user?.profilePicture ||
+                              "/placeholder-user.jpg"
+                            }
+                            alt="Profile"
+                          />
+                          <AvatarFallback className="text-2xl bg-primary/10">
+                            {profileData.firstName[0]}
+                            {profileData.lastName[0]}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        {isEditing && (
+                          <div className="absolute -bottom-2 -right-2 flex flex-col gap-1">
+                            {/* File input hidden */}
+                            <input
+                              type="file"
+                              id="profilePicture"
+                              accept="image/*"
+                              onChange={handleFileSelect}
+                              className="hidden"
+                            />
+
+                            {!selectedFile ? (
+                              // Upload button
+                              <Button
+                                size="sm"
+                                className="rounded-full w-8 h-8 p-0"
+                                onClick={() =>
+                                  document
+                                    .getElementById("profilePicture")
+                                    ?.click()
+                                }
+                              >
+                                <Upload className="w-3 h-3" />
+                              </Button>
+                            ) : (
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  className="rounded-full w-8 h-8 p-0 bg-green-600 hover:bg-green-700"
+                                  onClick={handleUpload}
+                                  disabled={uploading}
+                                >
+                                  {uploading ? (
+                                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                  ) : (
+                                    <Save className="w-3 h-3" />
+                                  )}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="rounded-full w-8 h-8 p-0"
+                                  onClick={handleCancelUpload}
+                                  disabled={uploading}
+                                >
+                                  <span className="text-xs">×</span>
+                                </Button>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
 
@@ -1073,7 +1224,7 @@ export default function ProfilePage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-9 px-4 bg-background/50 backdrop-blur border-border/20 text-sm"
+                              className="bg-background/50 backdrop-blur border-border/50"
                               onClick={() => setIsAddingLanguage(true)}
                             >
                               + Add Language

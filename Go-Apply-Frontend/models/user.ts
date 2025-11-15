@@ -4,6 +4,7 @@ export interface User {
   password?: string; // Optional for social logins
   firstName?: string;
   lastName?: string;
+  profilePicture?:string;
   profileCompleted: boolean;
   registrationStep: number; // Track which step they're on (0-8)
   updatedAt?: Date;

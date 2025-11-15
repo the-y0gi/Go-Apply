@@ -1038,7 +1038,7 @@ export default function SearchPage() {
                                       size="sm"
                                       onClick={() => handleDetails(program)}
                                     >
-                                      Details
+                                      Select Intake
                                     </Button>
 
                                     <Button

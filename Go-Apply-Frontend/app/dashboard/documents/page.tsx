@@ -329,8 +329,8 @@ export default function DocumentsPage() {
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
-
-                        <Button
+                        {/* Download button */}
+                        {/* <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => {
@@ -343,7 +343,7 @@ export default function DocumentsPage() {
                           }}
                         >
                           <Download className="w-4 h-4" />
-                        </Button>
+                        </Button> */}
 
                         <Button
                           variant="ghost"

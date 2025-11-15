@@ -170,3 +170,22 @@ exports.resetPassword = async (email, otp, newPassword) => {
       "Password reset successfully. You can now log in with your new password.",
   };
 };
+
+exports.updateProfilePicture = async (userId, profilePictureUrl) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { profilePicture: profilePictureUrl },
+      { new: true }
+    );
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return user;
+  } catch (error) {
+    console.error('Update profile picture service error:', error);
+    throw error;
+  }
+};

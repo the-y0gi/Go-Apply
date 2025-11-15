@@ -33,8 +33,8 @@ export default function AddAchievementForm({
 
   const handleSubmit = () => {
     if (!form.title || !form.date) {
-      toast.error("Title and Date are required!");
-      return;
+      // toast.error("Title and Date are required!");
+      // return;
     }
     const selectedDate = new Date();
     const today = new Date();
@@ -47,9 +47,9 @@ export default function AddAchievementForm({
   };
 
   return (
-    
+    <form onSubmit={handleSubmit}>
     <div className="border p-4 rounded-lg bg-background/50 backdrop-blur">
-      <Toaster position="top-right" />
+      {/* <Toaster position="top-right" /> */}
       <h2 className="font-semibold mb-4 text-lg">
         {initialData ? "Edit Achievement" : "Add Achievement"}
       </h2>
@@ -60,6 +60,7 @@ export default function AddAchievementForm({
         onChange={handleChange}
         value={form.title}
         className="border p-2 w-full mb-3 rounded"
+        required
       />
       <textarea
         name="description"
@@ -67,6 +68,7 @@ export default function AddAchievementForm({
         onChange={handleChange}
         value={form.description}
         className="border p-2 w-full mb-3 rounded"
+        required
       />
       <input
         type="date"
@@ -74,14 +76,16 @@ export default function AddAchievementForm({
         onChange={handleChange}
         value={form.date}
         className="border p-2 w-full mb-3 rounded"
+        required
       />
 
       <div className="flex gap-2">
-        <Button onClick={handleSubmit}>Save</Button>
+        <Button >Save</Button>
         <Button variant="outline" onClick={onCancel}>
           Cancel
         </Button>
       </div>
     </div>
+    </form>
   );
 }

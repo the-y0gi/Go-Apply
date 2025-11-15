@@ -1,11 +1,10 @@
+const connectDB = require("../config/database");
 const Payment = require("../models/Payment");
 const Application = require("../models/Application");
 const User = require("../models/User");
 const UserProfile = require("../models/UserProfile");
 const notificationService = require("../services/notificationService");
 const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
-const { connectDB } = require("../config/db");
-
 
 const {
   createOrder,
@@ -209,8 +208,6 @@ exports.verifyPaymentController = async (req, res) => {
 
       await sendApplicationToCollege(application);
 
-    
-
       await notificationService.createNotification(
         req.user._id,
         "application",
@@ -379,12 +376,9 @@ exports.initiateRefund = async (req, res) => {
 //   }
 // };
 
-
-
-
 exports.generatePaymentReceipt = async (req, res) => {
   try {
-    await connectDB(); // VERY IMPORTANT FOR VERCEL
+    await connectDB();
 
     const paymentId = req.params.id;
 
@@ -452,4 +446,3 @@ exports.generatePaymentReceipt = async (req, res) => {
     return res.status(500).send("Failed to generate receipt");
   }
 };
-

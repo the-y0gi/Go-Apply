@@ -551,14 +551,14 @@ export default function PaymentsPage() {
                         </motion.div>
                       ))}
 
-                      <Button
+                      {/* <Button
                         variant="outline"
                         className="w-full bg-background/50 backdrop-blur border-border/50"
                         onClick={() => startPayment(selectedAppId)}
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         Add New Method
-                      </Button>
+                      </Button> */}
                     </CardContent>
                   </Card>
                 </motion.div>

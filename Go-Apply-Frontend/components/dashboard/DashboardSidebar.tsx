@@ -34,7 +34,7 @@ const menuItems = [
     icon: BookOpen,
     label: "My Applications",
     href: "/dashboard/applications",
-    badge: "3",
+    badge: "",
   },
   { icon: FileText, label: "Documents", href: "/dashboard/documents" },
   // { icon: Calendar, label: "Deadlines", href: "/dashboard/deadlines" },

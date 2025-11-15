@@ -102,7 +102,7 @@ const [selectedProgram, setSelectedProgram] = useState<University | null>(null);
         const res = await axios.get<{
           success: boolean;
           data: { programs: Program[] };
-        }>("{API_URL}/api/search/programs");
+        }>(`${API_URL}/search/programs`);
 
         if (!mounted) return;
 

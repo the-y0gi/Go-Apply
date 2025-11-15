@@ -206,9 +206,7 @@ exports.verifyPaymentController = async (req, res) => {
 
       await sendApplicationToCollege(application);
 
-      console.log(
-        `Application ${application._id} auto-submitted to college after payment`
-      );
+    
 
       await notificationService.createNotification(
         req.user._id,

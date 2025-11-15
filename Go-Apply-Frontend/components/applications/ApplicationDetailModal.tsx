@@ -193,6 +193,10 @@ export default function ApplicationDetailModal({
 
   const allDocsUploaded = docs.missing.length === 0;
 
+  const isApplicationLocked =
+  application?.status?.toLowerCase() === "submitted" ||
+  application?.progress?.payment === true;
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -265,7 +269,8 @@ export default function ApplicationDetailModal({
         </div>
 
         {/* Required Documents */}
-        <div className="mt-6">
+
+        {!isApplicationLocked && (        <div className="mt-6">
           <h3 className="text-lg font-semibold mb-3">Required Documents</h3>
 
           <div className="mb-4 p-3 bg-blue-50 rounded-md">
@@ -305,7 +310,8 @@ export default function ApplicationDetailModal({
               );
             })}
           </div>
-        </div>
+        </div>)}
+
       </DialogContent>
     </Dialog>
   );

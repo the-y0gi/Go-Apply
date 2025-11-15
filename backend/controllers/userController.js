@@ -158,63 +158,7 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-// PUT -> Update user profile (working code)
-// const updateUserProfile = async (req, res) => {
-//   try {
-//     const allowedFields = [
-//       "phone",
-//       "dateOfBirth",
-//       "nationality",
-//       "address",
-//       "bio",
-//       "educationHistory",
-//       "experience",
-//       "technicalSkills",
-//       "languages",
-//       "achievements",
-//     ];
 
-//     const updateData = {};
-//     for (let field of allowedFields) {
-//       if (req.body[field] !== undefined) {
-//         updateData[field] = req.body[field];
-//       }
-//     }
-
-//     // Update or create the profile document
-//     const updatedProfile = await UserProfile.findOneAndUpdate(
-//       { userId: req.user._id },
-//       { ...updateData, updatedAt: new Date() },
-//       { new: true, runValidators: true, upsert: true }
-//     );
-
-//     // Also allow updating name/email if sent
-//     if (req.body.firstName || req.body.lastName || req.body.email) {
-//       await User.findByIdAndUpdate(req.user._id, {
-//         firstName: req.body.firstName,
-//         lastName: req.body.lastName,
-//         email: req.body.email,
-//       });
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Profile updated successfully",
-//       data: { profile: updatedProfile },
-//     });
-//   } catch (error) {
-//     console.error("Update user profile error:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Error updating profile",
-//       error: error.message,
-//     });
-//   }
-// };
-
-
-
-// PUT -> Update user profile
 const updateUserProfile = async (req, res) => {
   try {
     const allowedFields = [

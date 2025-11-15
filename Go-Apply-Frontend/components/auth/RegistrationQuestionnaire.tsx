@@ -31,7 +31,6 @@ export default function RegistrationQuestionnaire({
 }: RegistrationQuestionnaireProps) {
   const [currentStep, setCurrentStep] = useState(initialStep)
   const [profileData, setProfileData] = useState<Partial<UserProfile>>({})
-  // console.log("Options:", FIELD_OF_STUDY_OPTIONS)
 
 
   const backgroundImage = currentStep >= 4 ? '/australia.jpg' : '/Landscape.jpg'
@@ -71,20 +70,18 @@ export default function RegistrationQuestionnaire({
   useEffect(() => {
     if (isOpen && initialStep > 1) {
       const savedProfile = localStorage.getItem("tempProfile");
-      // console.log(" Saved profile from localStorage:", savedProfile);
       if (savedProfile) {
         setProfileData(JSON.parse(savedProfile));
       }
       if (savedProfile) {
         try {
           const parsed = JSON.parse(savedProfile);
-          // console.log("✅ Parsed profile:", parsed);
             (parsed);
         } catch (err) {
            console.error(" Failed to parse tempProfile:", err);
         }
       } else {
-        // console.warn(" No tempProfile found in localStorage");
+        console.warn(" No tempProfile found in localStorage");
       }
     }
   }, [isOpen, initialStep])
@@ -119,7 +116,6 @@ export default function RegistrationQuestionnaire({
               <Select 
                 value={profileData.fieldOfStudy} 
                 onValueChange={(value) => {
-                  // console.log("onValueChange triggered with:", value)
                     updateProfileData('fieldOfStudy', value)}}
               >
                 <SelectTrigger className="w-full bg-background/50 backdrop-blur border-border/50">

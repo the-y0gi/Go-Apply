@@ -48,14 +48,6 @@ import { Program, University } from "@/models/program";
 import { set } from "date-fns";
 import toast, { Toaster } from "react-hot-toast";
 
-// const toast = {
-//   success: (msg: string) => {
-//     hotToast.success(msg);
-//   },
-//   error: (msg: string) => {
-//     hotToast.error(msg);
-//   },
-// };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -313,12 +305,14 @@ export default function SearchPage() {
       matchesFeatures
     );
   });
-  const visiblePrograms = programsList.filter((program) => {
-    const intakeKeys =
-      program.intake?.map((i) => `${i.season}-${i.year}`) || [];
-    const applied = appliedIntakes[program.id] || [];
-    return applied.length < intakeKeys.length;
-  });
+
+  const visiblePrograms = filteredPrograms.filter((program) => {
+  const intakeKeys = program.intake?.map((i) => `${i.season}-${i.year}`) || [];
+  const applied = appliedIntakes[program.id] || [];
+
+  return applied.length < intakeKeys.length;
+});
+
 
   const handleFeatureToggle = (feature: string) => {
     setSelectedFeatures((prev) =>
@@ -428,7 +422,6 @@ export default function SearchPage() {
           "Content-Type": "application/json",
         },
       });
-      // console.log("[handleApplyNow] server response:", res?.data);
 
       if (res?.data?.success) {
         setAppliedIntakes((prev) => {

@@ -11,32 +11,41 @@ interface AddExperienceFormProps {
   onCancel: () => void;
 }
 
-export default function AddExperienceForm({ initialData, onSave, onCancel }: AddExperienceFormProps) {
+export default function AddExperienceForm({
+  initialData,
+  onSave,
+  onCancel,
+}: AddExperienceFormProps) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [company, setCompany] = useState(initialData?.company || "");
   const [startYear, setStartYear] = useState(initialData?.startYear || "");
   const [endYear, setEndYear] = useState(initialData?.endYear || "");
-  const [description, setDescription] = useState(initialData?.description || "");
+  const [description, setDescription] = useState(
+    initialData?.description || ""
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const currentYear = new Date().getFullYear();
 
     // Validate Start Year
-    if (startYear && (isNaN(Number(startYear)) || Number(startYear) < 1900 || Number(startYear) > currentYear)) {
+    if (
+      startYear &&
+      (isNaN(Number(startYear)) ||
+        Number(startYear) < 1900 ||
+        Number(startYear) > currentYear)
+    ) {
       toast.error("Start Year cannot be in the future!");
       return;
     }
 
-    // // Validate End Year
-    // if (endYear && endYear.toLowerCase() !== "present" && (isNaN(Number(endYear)) || Number(endYear) > currentYear)) {
-    //   alert("End Year cannot be in the future!");
-    //   return;
-    // }
-
     onSave({
-      title, company, startYear, endYear, description,
-      duration: ""
+      title,
+      company,
+      startYear,
+      endYear,
+      description,
+      duration: "",
     });
   };
 

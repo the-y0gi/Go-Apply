@@ -143,7 +143,6 @@ export default function HelpPage() {
 
   const handleSendMessage = () => {
     if (supportMessage.trim()) {
-    //  console.log("Sending support message:", supportMessage)
       setSupportMessage("")
     }
   }

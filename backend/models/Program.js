@@ -199,12 +199,20 @@ const programSchema = new mongoose.Schema(
 
     applicationDeadline: Date,
 
-    intake: [
-      {
-        type: String,
-        enum: ["fall", "spring", "summer", "winter"],
-      },
-    ],
+  intake: [
+  {
+    season: {
+      type: String,
+      enum: ["fall", "spring"],
+      required: true,
+    },
+    year: {
+      type: Number,
+      required: true,
+    },
+  },
+],
+
 
     requirements: {
       minGPA: Number,

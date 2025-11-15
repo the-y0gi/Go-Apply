@@ -68,7 +68,16 @@ const toast = {
   },
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const formatDeadline = (dateString: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
 
 
 // Programs loaded from backend
@@ -76,10 +85,14 @@ const usePrograms = () => {
   const [programs, setPrograms] = useState<University[]>([]);
   const [loadingPrograms, setLoadingPrograms] = useState(true);
   const [programsError, setProgramsError] = useState<string | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+const [selectedProgram, setSelectedProgram] = useState<University | null>(null);
+
+
+
 
   useEffect(() => {
     let mounted = true;
-
     const fetchPrograms = async () => {
       try {
         setLoadingPrograms(true);
@@ -87,7 +100,7 @@ const usePrograms = () => {
         const res = await axios.get<{
           success: boolean;
           data: { programs: Program[] };
-        }>(`${API_URL}/search/programs`);
+        }>("http://localhost:5000/api/search/programs");
 
         if (!mounted) return;
 
@@ -97,7 +110,7 @@ const usePrograms = () => {
         const mapped: University[] = backendPrograms.map((p) => {
           const uni = p.universityId || {};
           const tuitionAmount = p.tuitionFee?.amount ?? 0;
-          const currency = p.tuitionFee?.currency ?? "AUD";
+          const currency = p.tuitionFee?.currency ?? "INR";
           return {
             id: (p._id ?? "").toString(),
             universityId: uni._id ?? "", // <-- added
@@ -116,10 +129,9 @@ const usePrograms = () => {
             deadline: p.applicationDeadline ?? "",
             requirements: p.requirements ?? [],
             tags: p.tags ?? [],
+            intake: p.intake || [],
           } as University;
         });
-
-
 
         setPrograms(mapped);
         setProgramsError(null);
@@ -174,6 +186,8 @@ export default function ProgramsPage() {
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [minRating, setMinRating] = useState(4.0);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+const [showDetailsModal, setShowDetailsModal] = useState(false);
+const [selectedProgram, setSelectedProgram] = useState<University | null>(null);
 
   const {
     programs: allPrograms,
@@ -244,6 +258,11 @@ export default function ProgramsPage() {
         : [...prev, feature]
     );
   };
+  const handleDetails = (program: University) => {
+  setSelectedProgram(program);
+  setShowDetailsModal(true);
+};
+
   const handleApplyNow = async (program: University) => {
     // if (!program?.id) return;
 
@@ -316,7 +335,8 @@ export default function ProgramsPage() {
     //   // remove from applying
     //   setApplyingIds((prev) => prev.filter((id) => id !== program.id));
     // }
-    window.dispatchEvent(new Event("openSignIn"))
+    window.dispatchEvent(new Event("signInOpen"))
+    setSignInOpen(true);
   };
 
   // Normalize requirements coming from backend (array, object or string)
@@ -364,6 +384,35 @@ export default function ProgramsPage() {
           {/* ✅ Navbar at top */}
           <Navbar />
         </div>
+        <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+<DialogContent>
+  <DialogHeader>
+    <DialogTitle>{selectedProgram?.program}</DialogTitle>
+    <DialogDescription>Program intake details</DialogDescription>
+  </DialogHeader>
+
+  {/* Insert box here */}
+  <div className="mt-4 p-4 rounded-lg border border-blue-200 bg-blue-50">
+    <p className="text-sm text-blue-700 font-medium mb-2">
+      Great news! This program is available for the following intakes:
+    </p>
+
+    {selectedProgram?.intake?.length ? (
+      <ul className="list-disc ml-5 text-sm text-blue-800">
+        {selectedProgram.intake.map((i: any, idx: number) => (
+          <li key={idx}>
+            {i.season.charAt(0).toUpperCase() + i.season.slice(1)} {i.year}
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="text-sm text-blue-700">No intake information available.</p>
+    )}
+  </div>
+</DialogContent>
+
+</Dialog>
+
 
         <main className="flex-1 overflow-y-auto p-6 pt-20 bg-gray-50">
           <div className="space-y-6">
@@ -525,7 +574,7 @@ export default function ProgramsPage() {
                         <div className="space-y-6">
                           {/* Tuition Range */}
                           <div className="space-y-3">
-                            <Label>Annual Tuition Range (AUD)</Label>
+                            <Label>Annual Tuition Range (INR)</Label>
                             <div className="px-2">
                               <Slider
                                 value={tuitionRange}
@@ -745,13 +794,14 @@ export default function ProgramsPage() {
                                   <p className="text-sm text-muted-foreground">
                                     Application deadline:{" "}
                                     <span className="font-medium text-foreground">
-                                      {program.deadline}
+                                      {formatDeadline(program.deadline)}
                                     </span>
                                   </p>
                                   <div className="flex flex-wrap gap-2">
-                                    <Button variant="outline" size="sm">
-                                      Learn More
-                                    </Button>
+<Button variant="outline" size="sm" onClick={() => handleDetails(program)}>
+  Details
+</Button>
+
                                     <Button
                                       size="sm"
                                       onClick={() => handleApplyNow(program)}

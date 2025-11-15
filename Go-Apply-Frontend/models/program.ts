@@ -23,6 +23,10 @@ export interface Program {
       global?: number;
     };
   };
+  intake?: {
+    season: string;
+    year: number;
+  }[];
 }
 export interface University {
   id: string;
@@ -38,4 +42,8 @@ export interface University {
   deadline: string;
   requirements: string[];
   tags: string[];
+  intake?: {
+    season: string;
+    year: number;
+  }[];
 }

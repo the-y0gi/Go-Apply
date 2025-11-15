@@ -137,6 +137,19 @@ const applicationSchema = new mongoose.Schema(
       ref: "Program",
       required: true,
     },
+    intake: [
+      {
+        season: {
+          type: String,
+          enum: ["fall", "spring"],
+          required: true,
+        },
+        year: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
 
     status: {
       type: String,

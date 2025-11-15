@@ -602,129 +602,155 @@ const [selectedProgram, setSelectedProgram] = useState<University | null>(null);
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
-                <AnimatePresence>
-                  {filteredPrograms
-                    .filter((program) => !appliedPrograms.includes(program.id))
-                    .map((program, index) => (
-                      <motion.div
-                        key={program.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{
-                          opacity: 0,
-                          y: 20,
-                        }}
-                        transition={{ duration: 0.3, delay: 0.1 * index }}
-                      >
-                        <Card className="w-full h-full min-h-[320px] bg-white border border-gray-200 rounded-xl hover:shadow-lg transition-all duration-300 overflow-hidden">
-                          <CardContent className="p-6 flex flex-col justify-between h-full overflow-hidden">
-                            <div className="flex flex-col gap-4">
-                              {/* University Logo */}
-                              <div className="flex-shrink-0">
-                                <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
-                                  <GraduationCap className="w-8 h-8 text-primary" />
-                                </div>
-                              </div>
+               <AnimatePresence>
+  {filteredPrograms
+    .filter((program) => !appliedPrograms.includes(program.id))
+    .map((program, index) => (
+      <motion.div
+        key={program.id}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{
+          opacity: 0,
+          y: 20,
+        }}
+        transition={{ duration: 0.3, delay: 0.1 * index }}
+      >
+        <Card className="group relative w-full h-full bg-white border border-gray-200 rounded-2xl hover:shadow-2xl hover:border-primary/40 transition-all duration-300 overflow-hidden">
+          {/* Top Accent Bar */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary"></div>
+          
+          <CardContent className="p-6 flex flex-col h-full">
+            {/* Header Section */}
+            <div className="flex items-start justify-between mb-5">
+              <div className="flex items-start gap-4 flex-1">
+                {/* Logo */}
+                <div className="w-14 h-14 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                  <GraduationCap className="w-7 h-7 text-primary" />
+                </div>
 
-                              {/* Program Details */}
-                              <div className="flex-1 space-y-3">
-                                <div className="flex items-start justify-between">
-                                  <div>
-                                    <h3 className="text-lg font-semibold text-foreground">
-                                      {program.program}
-                                    </h3>
-                                    <p className="text-muted-foreground">
-                                      {program.university}
-                                    </p>
-                                    <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                                      <div className="flex items-center gap-1">
-                                        <MapPin className="w-3 h-3" />
-                                        {program.city}, {program.state}
-                                      </div>
-                                      <div className="flex items-center gap-1">
-                                        <Clock className="w-3 h-3" />
-                                        {program.duration}
-                                      </div>
-                                      <div className="flex items-center gap-1">
-                                        <DollarSign className="w-3 h-3" />
-                                        {program.tuition}
-                                      </div>
-                                    </div>
-                                  </div>
+                {/* Title & University */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-gray-900 leading-tight mb-1 group-hover:text-primary transition-colors">
+                    {program.program}
+                  </h3>
+                  <p className="text-sm font-medium text-gray-600">
+                    {program.university}
+                  </p>
+                </div>
+              </div>
 
-                                  <div className="text-right space-y-1">
-                                    <Badge variant="secondary">
-                                      {program.ranking}
-                                    </Badge>
-                                    <div className="flex items-center gap-1">
-                                      <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                                      <span className="text-sm font-medium">
-                                        {program.rating}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
+              {/* Ranking & Rating */}
+              <div className="flex flex-col items-end gap-2 ml-3">
+                <Badge variant="secondary" className="font-semibold text-xs px-3 py-1">
+                  {program.ranking}
+                </Badge>
+                <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg">
+                  <Star className="w-3.5 h-3.5 text-amber-500 fill-current" />
+                  <span className="text-sm font-bold text-gray-800">
+                    {program.rating}
+                  </span>
+                </div>
+              </div>
+            </div>
 
-                                {/* Tags */}
-                                <div className="flex flex-wrap gap-2">
-                                  {(program.tags || []).map((tag) => (
-                                    <Badge
-                                      key={String(tag)}
-                                      variant="outline"
-                                      className="text-xs"
-                                    >
-                                      {tag}
-                                    </Badge>
-                                  ))}
-                                </div>
+            {/* Info Section */}
+            <div className="space-y-2.5 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <MapPin className="w-4 h-4 " />
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  {program.city}, {program.state}
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 bg-purple-50 rounded-lg flex items-center justify-center">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  {program.duration}
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 bg-green-50 rounded-lg flex items-center justify-center">
+                  <DollarSign className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  {program.tuition}
+                </span>
+              </div>
+            </div>
 
-                                {/* Requirements */}
-                                <div>
-                                  <p className="text-sm font-medium text-foreground mb-1">
-                                    Requirements:
-                                  </p>
-                                  <div className="flex flex-wrap gap-2">
-                                    {normalizeRequirements(
-                                      program.requirements
-                                    ).map((req) => (
-                                      <span
-                                        key={String(req)}
-                                        className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded"
-                                      >
-                                        {req}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
+            {/* Tags */}
+            {(program.tags || []).length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {program.tags.map((tag) => (
+                  <Badge
+                    key={String(tag)}
+                    variant="outline"
+                    className="text-xs font-medium px-2.5 py-1"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
 
-                                {/* Action buttons */}
-                                <div className="flex flex-wrap items-center justify-between pt-4 gap-2">
-                                  <p className="text-sm text-muted-foreground">
-                                    Application deadline:{" "}
-                                    <span className="font-medium text-foreground">
-                                      {formatDeadline(program.deadline)}
-                                    </span>
-                                  </p>
-                                  <div className="flex flex-wrap gap-2">
-<Button variant="outline" size="sm" onClick={() => handleDetails(program)}>
-  Details
-</Button>
+            {/* Requirements */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-5">
+              <p className="text-xs font-semibold text-gray-700 mb-2.5 uppercase tracking-wide">
+                Requirements
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {normalizeRequirements(program.requirements).map((req) => (
+                  <span
+                    key={String(req)}
+                    className="text-xs font-medium text-gray-700 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm"
+                  >
+                    {req}
+                  </span>
+                ))}
+              </div>
+            </div>
 
-                                    <Button
-                                      size="sm"
-                                      onClick={() => handleApplyNow(program)}
-                                    >
-                                      Apply Now
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                </AnimatePresence>
+            {/* Footer Actions */}
+            <div className="mt-auto pt-4 border-t border-gray-100">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span className="text-xs text-gray-500">
+                    Deadline:
+                  </span>
+                  <span className="text-sm font-bold text-gray-900">
+                    {formatDeadline(program.deadline)}
+                  </span>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleDetails(program)}
+                  >
+                    Details
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleApplyNow(program)}
+                  >
+                    Apply Now
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    ))}
+</AnimatePresence>
                     <SignInModal
                             isOpen={signInOpen}
                             onClose={() => setSignInOpen(false)}

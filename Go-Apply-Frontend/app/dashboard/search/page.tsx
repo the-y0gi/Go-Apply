@@ -390,7 +390,9 @@ export default function SearchPage() {
         toast.error(
           `Please complete your profile: ${missingFields.join(", ")}`
         );
-        router.push("/dashboard/profile");
+       setTimeout(() => {
+    router.push("/dashboard/profile");
+  }, 2000);
         return;
       }
     } catch (err) {
@@ -462,10 +464,9 @@ export default function SearchPage() {
       } else {
         toast.error(res?.data?.message || "Failed to create application");
       }
-
       setShowAppliedButton(true);
       setShowAppliedButton(true);
-      toast.success("Application created — open Applied Programs to view it.");
+      // toast.success("Application created — open Applied Programs to view it.");
     } catch (err: any) {
        console.error(
         "Create application failed:",
@@ -474,7 +475,10 @@ export default function SearchPage() {
 
       if (err?.response?.data?.message?.includes("complete your profile")) {
         toast.error("Please complete your profile before applying");
-        router.push("/dashboard/profile");
+        setTimeout(() => {
+          router.push("/dashboard/profile");
+        },1500)
+        
         return;
       }
       if (err?.response?.status === 401) {
@@ -537,7 +541,7 @@ export default function SearchPage() {
   }
   return (
     <ProtectedRoute>
-      <Toaster position="top-right" />
+      <Toaster position="top-right" toastOptions={{ duration: 2000 }} />
       <div className="flex h-screen">
         <DashboardSidebar
           collapsed={sidebarCollapsed}

@@ -52,7 +52,6 @@ import axios from "axios";
 // API Base URL
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
-
 export default function ProfilePage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("personal");
@@ -204,7 +203,6 @@ export default function ProfilePage() {
 
       setSuccessMessage("Experience updated successfully");
     } catch (error) {
-     console.error("Error updating experience:", error);
       setError("Failed to update experience");
     }
   };
@@ -349,8 +347,8 @@ export default function ProfilePage() {
       // const token = localStorage.getItem('token')
       // const token =
       //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTBiNTgwNjgwY2Q5OTBlMjQ4MGM4YTIiLCJpYXQiOjE3NjIzNjE2ODYsImV4cCI6MTc2NDk1MzY4Nn0.V9yJwOZOSwtVKl2n1gEzKMbIXQSUBrdC77Qebs9xqEA";
-              const rawToken = localStorage.getItem("authToken") || ""
-        const token = rawToken.replace(/^"|"$/g, "").trim()
+      const rawToken = localStorage.getItem("authToken") || "";
+      const token = rawToken.replace(/^"|"$/g, "").trim();
       await axios.put(
         `${API_URL}/users/profile`,
         { languages: newLanguages },
@@ -395,8 +393,8 @@ export default function ProfilePage() {
       // const token = localStorage.getItem('token')
       // const token =
       //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTBiNTgwNjgwY2Q5OTBlMjQ4MGM4YTIiLCJpYXQiOjE3NjIzNjE2ODYsImV4cCI6MTc2NDk1MzY4Nn0.V9yJwOZOSwtVKl2n1gEzKMbIXQSUBrdC77Qebs9xqEA";
-              const rawToken = localStorage.getItem("authToken") || ""
-        const token = rawToken.replace(/^"|"$/g, "").trim()
+      const rawToken = localStorage.getItem("authToken") || "";
+      const token = rawToken.replace(/^"|"$/g, "").trim();
       await axios.put(
         `${API_URL}/users/profile`,
         { languages: updatedLanguages },
@@ -427,8 +425,8 @@ export default function ProfilePage() {
       // const token = localStorage.getItem('token')
       // const token =
       //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTBiNTgwNjgwY2Q5OTBlMjQ4MGM4YTIiLCJpYXQiOjE3NjIzNjE2ODYsImV4cCI6MTc2NDk1MzY4Nn0.V9yJwOZOSwtVKl2n1gEzKMbIXQSUBrdC77Qebs9xqEA";
-              const rawToken = localStorage.getItem("authToken") || ""
-        const token = rawToken.replace(/^"|"$/g, "").trim()
+      const rawToken = localStorage.getItem("authToken") || "";
+      const token = rawToken.replace(/^"|"$/g, "").trim();
       await axios.put(
         `${API_URL}/users/profile`,
         { achievements: newAchievements },
@@ -1029,6 +1027,7 @@ export default function ProfilePage() {
                             )}
 
                             {/* Add Skill Button */}
+
                             {isEditing && !isAddingSkill && (
                               <Button
                                 size="sm"
@@ -1043,48 +1042,55 @@ export default function ProfilePage() {
 
                           {/* Add Skill Input Form */}
                           {isAddingSkill && (
-                            <div className="mt-3 flex items-center gap-2">
+                            <form
+                              className="mt-3 flex items-center gap-2"
+                              onSubmit={handleAddSkill}
+                            >
                               <Input
                                 placeholder="Enter new skill"
                                 value={newSkill}
                                 onChange={(e) => setNewSkill(e.target.value)}
+                                required
                               />
-                              <Button onClick={handleAddSkill}>Save</Button>
+                              <Button type="submit">Save</Button>
                               <Button
                                 variant="outline"
                                 onClick={handleCancelSkill}
                               >
                                 Cancel
                               </Button>
-                            </div>
+                            </form>
                           )}
                         </div>
 
                         {/* Languages Section */}
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between mb-2">
                           <h3 className="text-lg font-semibold text-foreground">
                             Languages
                           </h3>
+
                           {isEditing && (
                             <Button
                               size="sm"
                               variant="outline"
-                              className="w-full bg-background/50 backdrop-blur border-border/50"
+                              className="h-9 px-4 bg-background/50 backdrop-blur border-border/20 text-sm"
                               onClick={() => setIsAddingLanguage(true)}
                             >
-                              Add Language
+                              + Add Language
                             </Button>
                           )}
                         </div>
 
+                        {/* Existing Languages List */}
                         {(profileData.languages || []).map((lang, index) => (
                           <div
                             key={index}
-                            className="border border-border/50 rounded-lg p-4 bg-background/50 backdrop-blur flex justify-between items-center"
+                            className="border border-border/50 rounded-lg p-4 bg-background/50 backdrop-blur flex justify-between items-center mb-2"
                           >
                             <span>
                               {lang.language} - {lang.proficiency}
                             </span>
+
                             {isEditing && (
                               <Button
                                 variant="ghost"
@@ -1098,8 +1104,16 @@ export default function ProfilePage() {
                           </div>
                         ))}
 
+                        {/* Add Language Form */}
                         {isAddingLanguage && (
-                          <div className="border border-border/50 rounded-lg p-4 bg-background/50 backdrop-blur mt-2 space-y-3">
+                          <form
+                            className="border border-border/50 rounded-lg p-4 bg-background/50 backdrop-blur mt-2 space-y-3"
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              handleSaveLanguage();
+                            }}
+                          >
+                            {/* Language Field */}
                             <div className="flex flex-col gap-2">
                               <label className="text-sm font-medium text-foreground">
                                 Language
@@ -1113,9 +1127,11 @@ export default function ProfilePage() {
                                     language: e.target.value,
                                   })
                                 }
+                                required
                               />
                             </div>
 
+                            {/* Proficiency Field */}
                             <div className="flex flex-col gap-2">
                               <label className="text-sm font-medium text-foreground">
                                 Proficiency
@@ -1129,14 +1145,17 @@ export default function ProfilePage() {
                                     proficiency: e.target.value,
                                   })
                                 }
+                                required
                               />
                             </div>
 
                             <div className="flex gap-2">
-                              <Button size="sm" onClick={handleSaveLanguage}>
+                              <Button type="submit" size="sm">
                                 Save
                               </Button>
+
                               <Button
+                                type="button"
                                 size="sm"
                                 variant="outline"
                                 onClick={() => {
@@ -1151,7 +1170,7 @@ export default function ProfilePage() {
                                 Cancel
                               </Button>
                             </div>
-                          </div>
+                          </form>
                         )}
                       </TabsContent>
 

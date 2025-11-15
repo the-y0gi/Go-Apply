@@ -30,7 +30,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useRouter } from "next/navigation";
 import ApplicationDetailModal from "@/components/applications/ApplicationDetailModal";
-import toast, {Toaster} from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -383,12 +383,15 @@ export default function ApplicationsPage() {
                                   }
                                 />
                                 <Info
-                                  label="Last Updated"
+                                  label="Selected Intake"
                                   value={
-                                    app.lastUpdate
-                                      ? new Date(
-                                          app.lastUpdate
-                                        ).toLocaleDateString()
+                                    app.intake && app.intake.length > 0
+                                      ? `${
+                                          app.intake[0].season
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                          app.intake[0].season.slice(1)
+                                        } ${app.intake[0].year}`
                                       : "N/A"
                                   }
                                 />

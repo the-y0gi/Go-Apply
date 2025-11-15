@@ -68,7 +68,7 @@ exports.createNewApplication = async (userId, data) => {
     "name degreeType fieldOfStudy tuitionFee applicationFee"
   );
 
-  //add notification
+  //add notification...
   await notificationService.createNotification(
     userId,
     "application",

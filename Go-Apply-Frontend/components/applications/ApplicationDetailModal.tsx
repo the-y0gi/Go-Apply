@@ -1,4 +1,3 @@
-//working code before using gpt
 "use client";
 
 import { useEffect, useState } from "react";
@@ -40,7 +39,7 @@ export default function ApplicationDetailModal({
     missing: [],
   });
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -54,7 +53,6 @@ export default function ApplicationDetailModal({
         const token = localStorage.getItem("authToken")?.replace(/^"|"$/g, "");
         if (!token) return;
 
-        // Program ID safely get karo
         const programId =
           typeof application.programId === "object"
             ? application.programId._id
@@ -95,29 +93,6 @@ export default function ApplicationDetailModal({
 
     fetchData();
   }, [application]);
-
-  //Auto progress update when all docs uploaded
-  // useEffect(() => {
-  //   const updateProgressIfAllDocsUploaded = async () => {
-  //     if (docs.missing.length === 0) {
-  //       try {
-  //         const token = localStorage
-  //           .getItem("authToken")
-  //           ?.replace(/^"|"$/g, "");
-  //         const res = await axios.patch(
-  //           `${API_URL}/applications/${application._id}/update-progress`,
-  //           { progress: { ...application.progress, documents: true } },
-  //           { headers: { Authorization: `Bearer ${token}` } }
-  //         );
-  //         onUpdate(res.data.data.application);
-  //       } catch (err) {
-  //         console.error("Progress update failed:", err);
-  //       }
-  //     }
-  //   };
-
-  //   updateProgressIfAllDocsUploaded();
-  // }, [docs.missing.length]);
 
   useEffect(() => {
     const updateProgressIfAllDocsUploaded = async () => {
@@ -170,7 +145,9 @@ export default function ApplicationDetailModal({
       formData.append("applicationId", application._id);
 
       try {
-        setUploading(true);
+        // Add this document type to uploading array
+        setUploading(prev => [...prev, type]);
+        
         const token = localStorage.getItem("authToken")?.replace(/^"|"$/g, "");
         const res = await axios.post(`${API_URL}/documents/upload`, formData, {
           headers: {
@@ -194,12 +171,13 @@ export default function ApplicationDetailModal({
         }));
       } catch (err) {
         toast({
-          title: "❌ Upload Failed",
+          title: "Upload Failed",
           description: "Please try again later.",
           variant: "destructive",
         });
       } finally {
-        setUploading(false);
+        // Remove this document type from uploading array
+        setUploading(prev => prev.filter(docType => docType !== type));
       }
     };
     input.click();
@@ -276,36 +254,6 @@ export default function ApplicationDetailModal({
         </div>
 
         {/* Required Documents */}
-        {/* <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-3">Required Documents</h3>
-          <div className="space-y-2">
-            {docs.required.map((type) => {
-              const uploaded = docs.uploaded.some((d) => d.type === type);
-              return (
-                <div
-                  key={type}
-                  className="flex items-center justify-between border p-2 rounded-md"
-                >
-                  <span>{type.toUpperCase()}</span>
-                  {uploaded ? (
-                    <Badge className="bg-green-100 text-green-800">
-                      Uploaded
-                    </Badge>
-                  ) : (
-                    <Button
-                      size="sm"
-                      onClick={() => handleUploadDocument(type)}
-                      disabled={uploading}
-                    >
-                      {uploading ? "Uploading..." : "Upload"}
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div> */}
-
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-3">Required Documents</h3>
 
@@ -321,6 +269,8 @@ export default function ApplicationDetailModal({
           <div className="space-y-2">
             {docs.required.map((type) => {
               const uploaded = docs.uploaded.some((d) => d.type === type);
+              const isUploading = uploading.includes(type);
+              
               return (
                 <div
                   key={type}
@@ -335,9 +285,9 @@ export default function ApplicationDetailModal({
                     <Button
                       size="sm"
                       onClick={() => handleUploadDocument(type)}
-                      disabled={uploading}
+                      disabled={isUploading}
                     >
-                      {uploading ? "Uploading..." : "Upload"}
+                      {isUploading ? "Uploading..." : "Upload"}
                     </Button>
                   )}
                 </div>

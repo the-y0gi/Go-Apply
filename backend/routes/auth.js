@@ -3,6 +3,8 @@ const passport = require("passport");
 require("../config/passport");
 
 const { protect } = require("../middleware/auth");
+const { upload, handleUploadError } = require("../middleware/upload"); 
+
 const {
   validateRegistration,
   validateLogin,
@@ -19,7 +21,7 @@ const {
     forgotPassword,
   verifyResetOtp,
   resetPassword,
-
+uploadProfilePicture 
 } = require("../controllers/authController");
 
 const router = express.Router();
@@ -32,6 +34,8 @@ router.get("/me", protect, getMe);
 router.get("/profile", protect, getProfile);
 router.put("/profile", protect, updateProfile);
 router.post("/logout", protect, logoutUser);
+
+router.patch("/profile-picture", protect, upload.single('profilePicture'), handleUploadError, uploadProfilePicture);
 
 // Google OAuth
 router.get(

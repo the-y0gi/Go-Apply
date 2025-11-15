@@ -1,4 +1,6 @@
 const authService = require("../services/authService");
+const { uploadToCloudinary } = require("../config/cloudinary");
+
 
 exports.registerUser = async (req, res) => {
   try {
@@ -64,13 +66,48 @@ exports.logoutUser = (req, res) => {
   res.json({ success: true, message: "Logged out successfully" });
 };
 
+
+exports.uploadProfilePicture = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please select an image to upload'
+      });
+    }
+
+    const result = await uploadToCloudinary(req.file.buffer, 'goapply/profile_pictures');
+
+    // Update user profile picture
+    const updatedUser = await authService.updateProfilePicture(
+      req.user._id, 
+      result.secure_url
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile picture updated successfully',
+      data: {
+        profilePicture: result.secure_url,
+      }
+    });
+
+  } catch (error) {
+    console.error('Profile picture upload error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to upload profile picture'
+    });
+  }
+};
+
 exports.googleCallback = (req, res) => {
   const token = req.user?.token;
   if (!token) {
     console.error("Google auth: missing token");
-    return res.redirect("http://localhost:3000/social-login?error=missing_token");
+    return res.redirect(`${process.env.CLIENT_URL}/social-login?error=missing_token`);
   }
-  res.redirect(`http://localhost:3000/social-login?token=${token}`);
+  res.redirect(`${process.env.CLIENT_URL}/social-login?token=${token}`);
 };
 
 exports.facebookCallback = (req, res) => {

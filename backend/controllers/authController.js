@@ -105,18 +105,18 @@ exports.googleCallback = (req, res) => {
   const token = req.user?.token;
   if (!token) {
     console.error("Google auth: missing token");
-    return res.redirect(`${process.env.CLIENT_URL}/social-login?error=missing_token`);
+    return res.redirect(`https://go-apply-frontend-weld.vercel.app/social-login?error=missing_token`);
   }
-  res.redirect(`${process.env.CLIENT_URL}/social-login?token=${token}`);
+  res.redirect(`https://go-apply-frontend-weld.vercel.app/social-login?token=${token}`);
 };
 
 exports.facebookCallback = (req, res) => {
   const token = req.user?.token;
   if (!token) {
     console.error("Facebook auth: missing token");
-    return res.redirect("http://localhost:3000/social-login?error=missing_token");
+    return res.redirect("https://go-apply-frontend-weld.vercel.app/social-login?error=missing_token");
   }
-  res.redirect(`http://localhost:3000/social-login?token=${token}`);
+  res.redirect(`https://go-apply-frontend-weld.vercel.app/social-login?token=${token}`);
 };
 
 

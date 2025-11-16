@@ -77,11 +77,9 @@ const [selectedProgram, setSelectedProgram] = useState<University | null>(null);
 
 
   useEffect(() => {
-    debugger
     let mounted = true;
     const fetchPrograms = async () => {
       try {
-        debugger
         setLoadingPrograms(true);
         // call backend; you can pass query params here if needed
         const res = await axios.get<{

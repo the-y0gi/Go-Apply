@@ -12,7 +12,8 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/api/auth/google/callback",
+      // callbackURL: "/api/auth/google/callback",
+      callbackURL: "https://go-apply.vercel.app/api/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -43,7 +44,9 @@ passport.use(
     {
       clientID: process.env.FB_APP_ID,
       clientSecret: process.env.FB_APP_SECRET,
-      callbackURL: "/api/auth/facebook/callback",
+      // callbackURL: "/api/auth/facebook/callback",
+      callbackURL: "https://go-apply.vercel.app/api/auth/facebook/callback",
+
       profileFields: ["id", "emails", "name"],
     },
     async (accessToken, refreshToken, profile, done) => {
